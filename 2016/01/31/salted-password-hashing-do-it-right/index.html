@@ -106,7 +106,7 @@
 <meta property="og:site_name" content="Full GC">
 <meta property="og:description" content="如果你是一个 web 开发工程师，可能你已经建立了一个用户账户系统。一个用户账户系统最重要的部分是如何保护密码。用户账户数据库经常被黑，如果你的网站曾经被攻击过，你绝对必须做点什么来保护你的用户的密码。最好的用来保护密码的方式是采用加盐密码散列 (salted password hasing)。 本文将解释为什么要这样做。 互联网上充斥着大量的误导信息，有许许多多的关于如何正确做密码散列的矛盾的观">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-03-27T13:13:32.625Z">
+<meta property="og:updated_time" content="2019-03-27T13:49:58.267Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="【译】正确使用密码加盐散列">
 <meta name="twitter:description" content="如果你是一个 web 开发工程师，可能你已经建立了一个用户账户系统。一个用户账户系统最重要的部分是如何保护密码。用户账户数据库经常被黑，如果你的网站曾经被攻击过，你绝对必须做点什么来保护你的用户的密码。最好的用来保护密码的方式是采用加盐密码散列 (salted password hasing)。 本文将解释为什么要这样做。 互联网上充斥着大量的误导信息，有许许多多的关于如何正确做密码散列的矛盾的观">
@@ -355,7 +355,7 @@
                 
                   <span class="post-meta-item-text">Edited on</span>
                 
-                <time title="Modified: 2019-03-27 21:13:32" itemprop="dateModified" datetime="2019-03-27T21:13:32+08:00">2019-03-27</time>
+                <time title="Modified: 2019-03-27 21:49:58" itemprop="dateModified" datetime="2019-03-27T21:49:58+08:00">2019-03-27</time>
               
             
           </span>
@@ -400,6 +400,7 @@
 <li>ASP.NET(C#) 源代码</li>
 <li>Ruby (on Rails) 源代码</li>
 </ul>
+<a id="more"></a>
 <p>什么是密码散列</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">hash(&quot;hello&quot;) = 2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824</span><br><span class="line">hash(&quot;hbllo&quot;) = 58756879c05c68dfac9866712fad6a93f8146f337a69afe7dd238f3364946366</span><br><span class="line">hash(&quot;waltz&quot;) = c0e81794384491161f1777c232bc6bd9ec38f616560b120fda8e90f383853542</span><br></pre></td></tr></table></figure>
 <p>Hash 算法是一种把任何数量的数据转换为一个指定长度的无法逆转的指纹的功能。当输入的数据即使只有 1 比特的数据改变，散列结果也将完全不一样（例如上面的示例）。这对密码保护极其有用，因为我们需要一种不能被解密的加密方式来存储密码，同时，我们希望能验证用户的密码是否正确。</p>
@@ -577,8 +578,8 @@
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2019/03/27/a-full-gc-investigation-report/" rel="prev" title="记一次Full GC频繁排查过程">
-                记一次Full GC频繁排查过程 <i class="fa fa-chevron-right"></i>
+              <a href="/2017/09/14/learning-jvm-1/" rel="prev" title="深入理解Java虚拟机学习笔记（一）">
+                深入理解Java虚拟机学习笔记（一） <i class="fa fa-chevron-right"></i>
               </a>
             
           </div>
@@ -650,7 +651,7 @@
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">2</span>
+                    <span class="site-state-item-count">14</span>
                     <span class="site-state-item-name">posts</span>
                   </a>
                 </div>
@@ -658,6 +659,23 @@
 
               
 
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">3</span>
+                    <span class="site-state-item-name">tags</span>
+                  
+                </div>
               
             </nav>
           

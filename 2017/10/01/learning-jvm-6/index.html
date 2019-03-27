@@ -98,29 +98,25 @@
 
 
 
-  <meta name="description" content="排查过程线上一台服务器从周一下午开始告警，告警内容为“Full GC比较频繁”。一开始大家都没有在意，猜想可能是部分业务压力有点大了，等高峰期过了就好了。 然而告警邮件的提醒一直响到了第二天。 周二中午，脆骨首先开始了排查，登录跳板机后，通过jstat工具查看GC情况，发现该应用的老年代占用100%，大约每5秒触发一次Full GC，但Full GC后没有效果，老年代占用依然为100%，据此我们推">
-<meta name="keywords" content="java,csharp,c,c++,program,php">
+  <meta name="description" content="虚拟机字节码执行引擎栈帧栈帧结构 局部变量表 操作数栈 动态连接 方法返回地址 附加信息  局部变量表 变量槽（Slot）：每个变量槽应该能存放一个boolean, byte, char, short, int, float, reference或returnAddress类型的数据，Slot的实际长度可以随着处理器，操作系统或虚拟机的不同而变化。对于64位数据类型，long和double，存储时">
+<meta name="keywords" content="java,jvm">
 <meta property="og:type" content="article">
-<meta property="og:title" content="记一次Full GC频繁排查过程">
-<meta property="og:url" content="https://fullgc.dev/2019/03/27/a-full-gc-investigation-report/index.html">
+<meta property="og:title" content="深入理解Java虚拟机学习笔记（六）">
+<meta property="og:url" content="https://fullgc.dev/2017/10/01/learning-jvm-6/index.html">
 <meta property="og:site_name" content="Full GC">
-<meta property="og:description" content="排查过程线上一台服务器从周一下午开始告警，告警内容为“Full GC比较频繁”。一开始大家都没有在意，猜想可能是部分业务压力有点大了，等高峰期过了就好了。 然而告警邮件的提醒一直响到了第二天。 周二中午，脆骨首先开始了排查，登录跳板机后，通过jstat工具查看GC情况，发现该应用的老年代占用100%，大约每5秒触发一次Full GC，但Full GC后没有效果，老年代占用依然为100%，据此我们推">
+<meta property="og:description" content="虚拟机字节码执行引擎栈帧栈帧结构 局部变量表 操作数栈 动态连接 方法返回地址 附加信息  局部变量表 变量槽（Slot）：每个变量槽应该能存放一个boolean, byte, char, short, int, float, reference或returnAddress类型的数据，Slot的实际长度可以随着处理器，操作系统或虚拟机的不同而变化。对于64位数据类型，long和double，存储时">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="https://fullgc.dev/images/WechatIMG599.png">
-<meta property="og:image" content="https://fullgc.dev/images/WechatIMG598.png">
-<meta property="og:image" content="https://fullgc.dev/images/WechatIMG600.png">
-<meta property="og:updated_time" content="2019-03-27T13:49:45.815Z">
+<meta property="og:updated_time" content="2019-03-27T13:50:34.783Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="记一次Full GC频繁排查过程">
-<meta name="twitter:description" content="排查过程线上一台服务器从周一下午开始告警，告警内容为“Full GC比较频繁”。一开始大家都没有在意，猜想可能是部分业务压力有点大了，等高峰期过了就好了。 然而告警邮件的提醒一直响到了第二天。 周二中午，脆骨首先开始了排查，登录跳板机后，通过jstat工具查看GC情况，发现该应用的老年代占用100%，大约每5秒触发一次Full GC，但Full GC后没有效果，老年代占用依然为100%，据此我们推">
-<meta name="twitter:image" content="https://fullgc.dev/images/WechatIMG599.png">
+<meta name="twitter:title" content="深入理解Java虚拟机学习笔记（六）">
+<meta name="twitter:description" content="虚拟机字节码执行引擎栈帧栈帧结构 局部变量表 操作数栈 动态连接 方法返回地址 附加信息  局部变量表 变量槽（Slot）：每个变量槽应该能存放一个boolean, byte, char, short, int, float, reference或returnAddress类型的数据，Slot的实际长度可以随着处理器，操作系统或虚拟机的不同而变化。对于64位数据类型，long和double，存储时">
 
 
 
 
 
 
-  <link rel="canonical" href="https://fullgc.dev/2019/03/27/a-full-gc-investigation-report/">
+  <link rel="canonical" href="https://fullgc.dev/2017/10/01/learning-jvm-6/">
 
 
 
@@ -130,7 +126,7 @@
   };
 </script>
 
-  <title>记一次Full GC频繁排查过程 | Full GC</title>
+  <title>深入理解Java虚拟机学习笔记（六） | Full GC</title>
   
 
 
@@ -299,7 +295,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://fullgc.dev/2019/03/27/a-full-gc-investigation-report/">
+    <link itemprop="mainEntityOfPage" href="https://fullgc.dev/2017/10/01/learning-jvm-6/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Hans">
@@ -316,7 +312,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">记一次Full GC频繁排查过程
+          <h1 class="post-title" itemprop="name headline">深入理解Java虚拟机学习笔记（六）
 
               
             
@@ -342,12 +338,24 @@
                 
               
 
-              <time title="Created: 2019-03-27 20:04:04 / Modified: 21:49:45" itemprop="dateCreated datePublished" datetime="2019-03-27T20:04:04+08:00">2019-03-27</time>
+              <time title="Created: 2017-10-01 10:00:00" itemprop="dateCreated datePublished" datetime="2017-10-01T10:00:00+08:00">2017-10-01</time>
             
 
             
               
 
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2019-03-27 21:50:34" itemprop="dateModified" datetime="2019-03-27T21:50:34+08:00">2019-03-27</time>
               
             
           </span>
@@ -381,21 +389,45 @@
       
 
       
-        <h2 id="排查过程"><a href="#排查过程" class="headerlink" title="排查过程"></a>排查过程</h2><p>线上一台服务器从周一下午开始告警，告警内容为“Full GC比较频繁”。一开始大家都没有在意，猜想可能是部分业务压力有点大了，等高峰期过了就好了。</p>
-<p>然而告警邮件的提醒一直响到了第二天。</p>
-<p>周二中午，脆骨首先开始了排查，登录跳板机后，通过jstat工具查看GC情况，发现该应用的老年代占用100%，大约每5秒触发一次Full GC，但Full GC后没有效果，老年代占用依然为100%，据此我们推测应该是有大量业务对象滞留在了内存中。我们开始第一次尝试使用jmap来dump堆，以期通过分析堆中的对象来定位问题，然而第一次仅dump出18M的内容，分析后没有发现有价值的内容，考虑到老年代长期占用100%已经使得该应用无法正确响应线上请求了，我们重启了该应用，观察启动后的GC情况是正常的。</p>
-<p>周二晚上下班后，我和脆骨再次登录服务器排查该问题。21时11分，应用日志显示有一家店启动了某一类型的活动，接下来的几分钟里，应用的老年代占用率迅速上升，并导致开始频繁Full GC，告警邮件也再次出现。到此我们初步确定了问题是由该类型的活动导致的，并第二次使用jmap将堆dump出来进行分析，这次成功dump出4.3G的hprof文件。</p>
+        <h2 id="虚拟机字节码执行引擎"><a href="#虚拟机字节码执行引擎" class="headerlink" title="虚拟机字节码执行引擎"></a>虚拟机字节码执行引擎</h2><h3 id="栈帧"><a href="#栈帧" class="headerlink" title="栈帧"></a>栈帧</h3><h4 id="栈帧结构"><a href="#栈帧结构" class="headerlink" title="栈帧结构"></a>栈帧结构</h4><ol>
+<li>局部变量表</li>
+<li>操作数栈</li>
+<li>动态连接</li>
+<li>方法返回地址</li>
+<li>附加信息</li>
+</ol>
+<h4 id="局部变量表"><a href="#局部变量表" class="headerlink" title="局部变量表"></a>局部变量表</h4><ol>
+<li>变量槽（Slot）：每个变量槽应该能存放一个<code>boolean</code>, <code>byte</code>, <code>char</code>, <code>short</code>, <code>int</code>, <code>float</code>, <code>reference</code>或<code>returnAddress</code>类型的数据，Slot的实际长度可以随着处理器，操作系统或虚拟机的不同而变化。对于64位数据类型，<code>long</code>和<code>double</code>，存储时将以高位对齐的方式占用两个连续的变量槽。</li>
+<li>索引定位：虚拟机通过索引定位的方式使用局部变量表，索引值的范围是从0开始至局部变量表最大的Slot数量。</li>
+<li>参数传递：虚拟机通过使用局部变量表完成参数值到参数变量列表的传递过程，当执行实例方法时，第0位变量槽默认用于传递方法所属对象实例的引用，即”this”。</li>
+<li>局部变量：参数列表分配完毕后，根据方法体内部定义变量的顺序和作用域分配变量槽。</li>
+<li>变量槽的复用：当代码执行离开了局部变量A的作用域之后，如果有新的局部变量被定义，那么A使用的变量槽就可以被新的局部变量复用。</li>
+<li>局部变量的初始化：局部变量未经初始化不能被使用，局部变量不会被自动赋予零值。</li>
+</ol>
+<h4 id="操作数栈"><a href="#操作数栈" class="headerlink" title="操作数栈"></a>操作数栈</h4><ol>
+<li>栈元素：32位数据类型元素占用一个容量，64位数据类型元素占用两个容量。</li>
+<li>作用：供字节码指令执行的时候，写入和提取内容使用。</li>
+</ol>
 <a id="more"></a>
-<p><img src="/images/WechatIMG599.png" alt="dump出的堆对象情况1"></p>
-<p><img src="/images/WechatIMG598.png" alt="dump出的堆对象情况2"></p>
-<p>在将dump出的hprof文件载入visualvm中之后，发现char数组占用了51.4%的堆空间，进一步分析发现有一个ArrayList存储了3174万个字符串，内容均为会员id。通过分析代码，我们发现有一段逻辑是需要从数据库中查询之前该活动已参与的对象，为了减轻数据库压力，开发通过循环分页查询来一页页地将数据查询出来，直到查询不到数据时跳出循环。在查询数据的代码中，我们发现周一有过一次代码变更，修改了传入查询语句的分页参数，更加深入地分析代码后，我们发现变更的分页参数并未赋值，其实际值总是为0，导致每次查询都是查第一页的数据，无法跳出循环，查询的结果又被缓存到一个ArrayList中，这才导致了老年代被填满，不断触发Full GC。</p>
-<p>在调整了查询数据的代码后，老年代占用恢复正常，Full GC也不再频繁出现。</p>
-<p><img src="/images/WechatIMG600.png" alt="full gc次数监控"></p>
-<h2 id="经验总结"><a href="#经验总结" class="headerlink" title="经验总结"></a>经验总结</h2><ol>
-<li>关键操作一定要充分单测；</li>
-<li>循环跳出条件如果依赖于数据库查询，对查询的语句和各个参数必须做到心中有数；</li>
-<li>流程测试，对每个流程将要出现的结果要有预期，并在测试完成后将实际结果与预期结果进行比对；</li>
-<li>线上告警要重视，对于应用的运行指标出现的异常要敏感，尽早定位问题，解决问题。</li>
+<h4 id="动态连接"><a href="#动态连接" class="headerlink" title="动态连接"></a>动态连接</h4><p>动态连接指在每一次运行期间将方法的符号引用转化为直接引用的。与之相对应的是静态解析，在类加载阶段或第一次使用时就转化为直接引用。</p>
+<h4 id="方法返回地址"><a href="#方法返回地址" class="headerlink" title="方法返回地址"></a>方法返回地址</h4><ol>
+<li>正常完成出口：执行任意一个方法返回的字节码指令，是否给方法调用者产生返回值由字节码指令决定。</li>
+<li>异常完成出口：在方法执行过程中遇到了异常，并且异常没有在方法体内得到处理，导致方法退出，不会给方法调用者产生返回值。</li>
+<li>方法返回地址：一般来说，方法正常退出时，栈帧中的方法返回地址会使用调用者的PC计数器的值，而方法异常退出时，返回地址需要通过异常处理器表来确定。</li>
+</ol>
+<h3 id="方法调用"><a href="#方法调用" class="headerlink" title="方法调用"></a>方法调用</h3><ol>
+<li>非虚方法：指在类加载阶段，可以确定调用版本，并且调用版本在运行期不可变的方法，主要包括<strong>主要包括静态方法和私有方法，以及使用final修饰的方法</strong>。</li>
+<li>解析：在类加载阶段，虚拟机会将非虚方法的符号引用转化为直接引用。</li>
+<li>静态类型：也称为外观类型，指变量的字面值类型或表达式值类型。静态类型变化在编译期是可知的。</li>
+<li>实际类型：指变量的在运行期时的类型。实际类型变化在编译期是不可知的。</li>
+<li>静态分派：所有依赖静态类型来确定方法执行版本的分派动作称为静态分派。<strong>方法重载是静态分派</strong>。静态分派发生在编译期。</li>
+<li>动态分派：通过实际类型来确定方法执行版本的分派动作称为动态分派。<strong>方法重写是动态分派</strong>。动态分派发生在运行期。</li>
+<li>方法的宗量：方法的接受者与方法的参数统称为方法的宗量。</li>
+<li>单分派与多分派：单分派是根据一个宗量来确定方法执行版本，多分派是根据多个宗量来确定方法执行版本。在Java中，静态分派属于多分派（分派时需要确定方法的接受者和参数），动态分派属于单分派（分派时方法的接受者已确定，只需确定方法的参数）。</li>
+</ol>
+<h3 id="动态语言支持"><a href="#动态语言支持" class="headerlink" title="动态语言支持"></a>动态语言支持</h3><ol>
+<li>MethodHandle：JDK 1.7新增的用于动态确定目标方法的机制，类似于C/C++中的函数指针或C#中的委托。</li>
+<li>invokedynamic指令：在字节码层面实现与MethodHandle相似的功能。</li>
 </ol>
 
       
@@ -418,6 +450,12 @@
 
     <footer class="post-footer">
       
+        <div class="post-tags">
+          
+            <a href="/tags/java-jvm/" rel="tag"># java,jvm</a>
+          
+        </div>
+      
 
       
       
@@ -427,8 +465,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2018/05/07/the-difference-between-cluster-and-distributed/" rel="next" title="集群与分布式的区别">
-                <i class="fa fa-chevron-left"></i> 集群与分布式的区别
+              <a href="/2017/09/20/learning-jvm-5/" rel="next" title="深入理解Java虚拟机学习笔记（五）">
+                <i class="fa fa-chevron-left"></i> 深入理解Java虚拟机学习笔记（五）
               </a>
             
           </div>
@@ -436,6 +474,10 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/10/04/learning-jvm-8/" rel="prev" title="深入理解Java虚拟机学习笔记（八）">
+                深入理解Java虚拟机学习笔记（八） <i class="fa fa-chevron-right"></i>
+              </a>
             
           </div>
         </div>
@@ -589,7 +631,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#排查过程"><span class="nav-number">1.</span> <span class="nav-text">排查过程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#经验总结"><span class="nav-number">2.</span> <span class="nav-text">经验总结</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#虚拟机字节码执行引擎"><span class="nav-number">1.</span> <span class="nav-text">虚拟机字节码执行引擎</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#栈帧"><span class="nav-number">1.1.</span> <span class="nav-text">栈帧</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#栈帧结构"><span class="nav-number">1.1.1.</span> <span class="nav-text">栈帧结构</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#局部变量表"><span class="nav-number">1.1.2.</span> <span class="nav-text">局部变量表</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#操作数栈"><span class="nav-number">1.1.3.</span> <span class="nav-text">操作数栈</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#动态连接"><span class="nav-number">1.1.4.</span> <span class="nav-text">动态连接</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#方法返回地址"><span class="nav-number">1.1.5.</span> <span class="nav-text">方法返回地址</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#方法调用"><span class="nav-number">1.2.</span> <span class="nav-text">方法调用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#动态语言支持"><span class="nav-number">1.3.</span> <span class="nav-text">动态语言支持</span></a></li></ol></li></ol></div>
             
 
           </div>

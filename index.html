@@ -337,7 +337,7 @@
                 
               
 
-              <time title="Created: 2019-03-27 20:04:04 / Modified: 21:01:20" itemprop="dateCreated datePublished" datetime="2019-03-27T20:04:04+08:00">2019-03-27</time>
+              <time title="Created: 2019-03-27 20:04:04 / Modified: 21:49:45" itemprop="dateCreated datePublished" datetime="2019-03-27T20:04:04+08:00">2019-03-27</time>
             
 
             
@@ -377,24 +377,19 @@
 
       
         
-          
-            <h2 id="排查过程"><a href="#排查过程" class="headerlink" title="排查过程"></a>排查过程</h2><p>线上一台服务器从周一下午开始告警，告警内容为“Full GC比较频繁”。一开始大家都没有在意，猜想可能是部分业务压力有点大了，等高峰期过了就好了。</p>
+          <h2 id="排查过程"><a href="#排查过程" class="headerlink" title="排查过程"></a>排查过程</h2><p>线上一台服务器从周一下午开始告警，告警内容为“Full GC比较频繁”。一开始大家都没有在意，猜想可能是部分业务压力有点大了，等高峰期过了就好了。</p>
 <p>然而告警邮件的提醒一直响到了第二天。</p>
 <p>周二中午，脆骨首先开始了排查，登录跳板机后，通过jstat工具查看GC情况，发现该应用的老年代占用100%，大约每5秒触发一次Full GC，但Full GC后没有效果，老年代占用依然为100%，据此我们推测应该是有大量业务对象滞留在了内存中。我们开始第一次尝试使用jmap来dump堆，以期通过分析堆中的对象来定位问题，然而第一次仅dump出18M的内容，分析后没有发现有价值的内容，考虑到老年代长期占用100%已经使得该应用无法正确响应线上请求了，我们重启了该应用，观察启动后的GC情况是正常的。</p>
 <p>周二晚上下班后，我和脆骨再次登录服务器排查该问题。21时11分，应用日志显示有一家店启动了某一类型的活动，接下来的几分钟里，应用的老年代占用率迅速上升，并导致开始频繁Full GC，告警邮件也再次出现。到此我们初步确定了问题是由该类型的活动导致的，并第二次使用jmap将堆dump出来进行分析，这次成功dump出4.3G的hprof文件。</p>
-<p><img src="/images/WechatIMG599.png" alt="dump出的堆对象情况1"></p>
-<p><img src="/images/WechatIMG598.png" alt="dump出的堆对象情况2"></p>
-<p>在将dump出的hprof文件载入visualvm中之后，发现char数组占用了51.4%的堆空间，进一步分析发现有一个ArrayList存储了3174万个字符串，内容均为会员id。通过分析代码，我们发现有一段逻辑是需要从数据库中查询之前该活动已参与的对象，为了减轻数据库压力，开发通过循环分页查询来一页页地将数据查询出来，直到查询不到数据时跳出循环。在查询数据的代码中，我们发现周一有过一次代码变更，修改了传入查询语句的分页参数，更加深入地分析代码后，我们发现变更的分页参数并未赋值，其实际值总是为0，导致每次查询都是查第一页的数据，无法跳出循环，查询的结果又被缓存到一个ArrayList中，这才导致了老年代被填满，不断触发Full GC。</p>
-<p>在调整了查询数据的代码后，老年代占用恢复正常，Full GC也不再频繁出现。</p>
-<p><img src="/images/WechatIMG600.png" alt="full gc次数监控"></p>
-<h2 id="经验总结"><a href="#经验总结" class="headerlink" title="经验总结"></a>经验总结</h2><ol>
-<li>关键操作一定要充分单测；</li>
-<li>循环跳出条件如果依赖于数据库查询，对查询的语句和各个参数必须做到心中有数；</li>
-<li>流程测试，对每个流程将要出现的结果要有预期，并在测试完成后将实际结果与预期结果进行比对；</li>
-<li>线上告警要重视，对于应用的运行指标出现的异常要敏感，尽早定位问题，解决问题。</li>
-</ol>
-
+          <!--noindex-->
           
+            <div class="post-button text-center">
+              <a class="btn" href="/2019/03/27/a-full-gc-investigation-report/#more" rel="contents">
+                Read more &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
         
       
     </div>
@@ -449,7 +444,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://fullgc.dev/2016/01/31/salted-password-hashing-do-it-right/">
+    <link itemprop="mainEntityOfPage" href="https://fullgc.dev/2018/05/07/the-difference-between-cluster-and-distributed/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Hans">
@@ -469,7 +464,7 @@
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2016/01/31/salted-password-hashing-do-it-right/" class="post-title-link" itemprop="url">【译】正确使用密码加盐散列</a>
+                <a href="/2018/05/07/the-difference-between-cluster-and-distributed/" class="post-title-link" itemprop="url">集群与分布式的区别</a>
               
             
           </h1>
@@ -494,7 +489,7 @@
                 
               
 
-              <time title="Created: 2016-01-31 10:05:04" itemprop="dateCreated datePublished" datetime="2016-01-31T10:05:04+08:00">2016-01-31</time>
+              <time title="Created: 2018-05-07 10:56:00" itemprop="dateCreated datePublished" datetime="2018-05-07T10:56:00+08:00">2018-05-07</time>
             
 
             
@@ -511,7 +506,7 @@
                 
                   <span class="post-meta-item-text">Edited on</span>
                 
-                <time title="Modified: 2019-03-27 21:13:32" itemprop="dateModified" datetime="2019-03-27T21:13:32+08:00">2019-03-27</time>
+                <time title="Modified: 2019-03-27 21:48:12" itemprop="dateModified" datetime="2019-03-27T21:48:12+08:00">2019-03-27</time>
               
             
           </span>
@@ -547,160 +542,1529 @@
       
         
           
-            <p>如果你是一个 web 开发工程师，可能你已经建立了一个用户账户系统。一个用户账户系统最重要的部分是如何保护密码。用户账户数据库经常被黑，如果你的网站曾经被攻击过，你绝对必须做点什么来保护你的用户的密码。最好的用来保护密码的方式是采用加盐密码散列 (salted password hasing)。 本文将解释为什么要这样做。</p>
-<p>互联网上充斥着大量的误导信息，有许许多多的关于如何正确做密码散列的矛盾的观点，有些甚至是误解。密码散列是一个简单的事情，但是仍然有很多人做错了。在这篇文章中，我不仅将解释正确实现的方式，而且告诉你为什么这样做。</p>
-<p>重要提示：如果你正在试图自己编码实现密码散列，请停下来！它太容易搞糟了。不，不，不，你在大学上的密码学课程不能让你避免这个警告。这个警告适用于每个人：不要实现自己的加密！如何保存密码的问题已经被解决了。使用 phpass 或者本文后面提供的代码。</p>
-<p>如果因为什么原因你没有阅读上面的警告，请现在立即去读一遍。真的，本文不是教你如何实现自己的密码存储系统，而是解释为什么密码应该这样存储。</p>
-<p>本文后面有基于 BSD 授权协议的密码散列源代码：</p>
-<ul>
-<li>PHP 源代码</li>
-<li>Java 源代码</li>
-<li>ASP.NET(C#) 源代码</li>
-<li>Ruby (on Rails) 源代码</li>
-</ul>
-<p>什么是密码散列</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">hash(&quot;hello&quot;) = 2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824</span><br><span class="line">hash(&quot;hbllo&quot;) = 58756879c05c68dfac9866712fad6a93f8146f337a69afe7dd238f3364946366</span><br><span class="line">hash(&quot;waltz&quot;) = c0e81794384491161f1777c232bc6bd9ec38f616560b120fda8e90f383853542</span><br></pre></td></tr></table></figure>
-<p>Hash 算法是一种把任何数量的数据转换为一个指定长度的无法逆转的指纹的功能。当输入的数据即使只有 1 比特的数据改变，散列结果也将完全不一样（例如上面的示例）。这对密码保护极其有用，因为我们需要一种不能被解密的加密方式来存储密码，同时，我们希望能验证用户的密码是否正确。</p>
-<p>一般的基于 hash 的账户注册和验证流程如下：</p>
-<ol>
-<li>用户创建一个账户</li>
-<li>用户的密码被 hash 后存储到数据库中。没有任何地方会将纯文本的密码（未加密）写入到硬盘上。</li>
-<li>当用户尝试登录时，用户输入的密码将再次被 hash 然后和真实密码的 hash 进行比对 （从数据库中取出）。</li>
-<li>如果 hash 值匹配，用户被授权可以访问。如果不，用户将被告知输入了无效的登录凭据。</li>
-<li>在用户每次尝试登录账户的时候都将重复第 3 步和第 4 步。</li>
-</ol>
-<p>在第四步中，绝不要告诉用户是用户名还是密码错了。总是显示类似这样的一条信息：无效的用户名或密码。这可以阻止攻击者枚举他不知道密码的用户的真实用户名。</p>
-<p>值得注意的是用来保护密码的 hash 算法可能跟你在数据结构课程上见到的不太一样。用来实现数据结构的 hash 算法例如说 hash table 被设计为快速但是不安全。只有加密 hash 算法可以被用来实现密码 hash 。这些 hash 算法是用于加密 hash 的：SHA256,SHA512,RipeMD 和 WHIRLPOOL 。</p>
-<p>你可能很简单地就以为只要使用了 hash 算法你的用户的密码就安全了。这还远远不够。有非常多的可以通过 hash 值快速恢复出密码的方法。有许多容易实现的技术可以让这些攻击不那么有效。为了说明这些技术的动机，让我们以一个网站来讨论。在前端页面上，你可以提交一个待攻击的 hash 列表，然后在 1 秒以内就收到反馈。显然地，简单的对密码进行 hash 不能满足我们的安全需求。</p>
-<p>下一节将讨论一些常用的攻击密码 hash 的方式。</p>
-<h2 id="攻击散列的方法"><a href="#攻击散列的方法" class="headerlink" title="攻击散列的方法"></a>攻击散列的方法</h2><h3 id="词典和暴力攻击"><a href="#词典和暴力攻击" class="headerlink" title="词典和暴力攻击"></a>词典和暴力攻击</h3><ul>
-<li>Dictionary Attack</li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Trying apple        : failed</span><br><span class="line">Trying blueberry    : failed</span><br><span class="line">Trying justinbeiber : failed</span><br><span class="line">...</span><br><span class="line">Trying letmein      : failed</span><br><span class="line">Trying s3cr3t       : success!</span><br></pre></td></tr></table></figure>
-<ul>
-<li>Brute Force Attack</li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Trying aaaa : failed</span><br><span class="line">Trying aaab : failed</span><br><span class="line">Trying aaac : failed</span><br><span class="line">...</span><br><span class="line">Trying acdb : failed</span><br><span class="line">Trying acdc : success!</span><br></pre></td></tr></table></figure>
-<p>最简单的攻击 hash 的方式是猜测密码，对每个猜测都计算 hash 值，然后比对猜测的 hash 值是否和真实值一样。如果 hash 值一样，就猜对了。最常见的两种猜测密码的方式就是 词典攻击 和 暴力攻击。</p>
-<p>词典攻击就是使用一个包含单词，短语，常见密码和其他可能会被用户作为密码的字符串的文件。文件中每个单词都被 hash 过，然后使用 hash 值和密码的 hash 值进行比对。如果匹配，这个字符串就是密码。这些词典文件都是从大量的文本中提取出来的单词，有些甚至是从真实的密码数据库中提取出来的。还可以通过进一步的处理来让词典攻击更有效，例如把单词替换为近似的单词(“hello” 替换为 “h3110”)。</p>
-<p>暴力攻击是指尝试指定长度的所有可能的字符组合。这种攻击方式计算量巨大，在单位 CPU 时间内是最低效的攻击方式，但是偶尔会碰巧找到密码。密码字符串应该有足够的长度，这样通过穷举所有的可能组合将耗费极长的时间，这种攻击方式几乎就失效了。</p>
-<p>没有方法可以阻止词典攻击和暴力攻击。他们虽然低效，但是却没有方式可以阻止。如果你的密码系统是安全的，那么唯一的攻击方式就是执行词典攻击或者暴力攻击。</p>
-<h3 id="查表攻击"><a href="#查表攻击" class="headerlink" title="查表攻击"></a>查表攻击</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Searching: 5f4dcc3b5aa765d61d8327deb882cf99: FOUND: password5</span><br><span class="line">Searching: 6cbe615c106f422d23669b610b564800:  not in database</span><br><span class="line">Searching: 630bf032efe4507f2c57b280995925a9: FOUND: letMEin12 </span><br><span class="line">Searching: 386f43fab5d096a7a66d67c8f213e5ec: FOUND: mcd0nalds</span><br><span class="line">Searching: d5ec75d5fe70d428685510fae36492d9: FOUND: p@ssw0rd!</span><br></pre></td></tr></table></figure>
-<p>查表攻击是一种非常有效的而且快速的用于攻击同种 hash 加密的方式。通常的做法是预先计算密码词典中的所有 hash 值并存储在一个查询表数据结构中。一个好的设计的查询表即使有数10亿 hash 值也可以每秒进行数百次 hash 查询。</p>
-<p>如果你想了解更多关于查询表到底可以有多块，试试通过 CrackStation 的 在线 hash 破解 破解下面的 hash 值：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">c11083b4b0a7743af748c85d343dfee9fbb8b2576c05f3a7f0d632b0926aadfc</span><br><span class="line">08eac03b80adc33dc7d8fbe44b7c7b05d3a2c511166bdb43fcb710b03ba919e7</span><br><span class="line">e4ba5cbd251c98e6cd1c23f126a3b81d8d8328abc95387229850952b3ef9f904</span><br><span class="line">5206b8b8a996cf5320cb12ca91c7b790fba9f030408efe83ebb83548dc3007bd</span><br></pre></td></tr></table></figure>
-<h3 id="反向查表攻击"><a href="#反向查表攻击" class="headerlink" title="反向查表攻击"></a>反向查表攻击</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Searching for hash(apple) in users&apos; hash list...     : Matches [alice3, 0bob0, charles8]</span><br><span class="line">Searching for hash(blueberry) in users&apos; hash list... : Matches [usr10101, timmy, john91]</span><br><span class="line">Searching for hash(letmein) in users&apos; hash list...   : Matches [wilson10, dragonslayerX, joe1984]</span><br><span class="line">Searching for hash(s3cr3t) in users&apos; hash list...    : Matches [bruce19, knuth1337, john87]</span><br><span class="line">Searching for hash(z@29hjja) in users&apos; hash list...  : No users used this password</span><br></pre></td></tr></table></figure>
-<p>这种攻击允许攻击者同时应用词典攻击或者暴力攻击而不用预先计算出一个查询表。</p>
-<p>首先，攻击者通过用户账户数据库创建一个所有拥有相同 hash 密码值的映射表。然后攻击者计算每一个猜测的密码的 hash 值从而获得一个使用这个密码的用户列表。这种攻击方式在处理很多用户拥有相同的密码时特别有效。</p>
-<h3 id="彩虹表攻击"><a href="#彩虹表攻击" class="headerlink" title="彩虹表攻击"></a>彩虹表攻击</h3><p>彩虹表是一种时间-内存交换技术。他类似查表，但是他缩小了查询表导致牺牲了 hash 攻击速度。因为他更小，所以在同样的控件中可以存放更多的 hash 值，这样就更加高效了。使用彩虹表可以攻击任何不多于8个字符的密码 md5 hash。</p>
-<p>下一节中，我们将会了解一种叫做加盐的技术，这种技术可以让查表攻击和彩虹表攻击变得无效。</p>
-<h2 id="加盐"><a href="#加盐" class="headerlink" title="加盐"></a>加盐</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">hash(&quot;hello&quot;)                    = 2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824</span><br><span class="line">hash(&quot;hello&quot; + &quot;QxLUF1bgIAdeQX&quot;) = 9e209040c863f84a31e719795b2577523954739fe5ed3b58a75cff2127075ed1</span><br><span class="line">hash(&quot;hello&quot; + &quot;bv5PehSMfV11Cd&quot;) = d1d3ec2e6f20fd420d50e2642992841d8338a314b8ea157c9e18477aaef226ab</span><br><span class="line">hash(&quot;hello&quot; + &quot;YYLmfY6IehjZMQ&quot;) = a49670c3c18b9e079b9cfaf51634f563dc8ae3070db2c4a8544305df1b60f007</span><br></pre></td></tr></table></figure>
-<p>查表攻击和彩虹表攻击只有在每个密码都使用同样的方式 hash 的时候才起作用。如果两个用户有同样的密码，他们就有同样的 hash 值。我们可以通过让每个 hash 都随机，这样就阻止了这种攻击方式，这样同样的密码就被 hash 了两次，所以 hash 值也就不一样了。</p>
-<p>我们可以在密码进行 hash 前给密码前或后添加一个随机的字符串，也就是 salt 。像上面的例子中看到的那样，这样可以让同样的密码每次都得到完全不同的 hash 值。这样为了检查密码的正确性，我们需要用到 salt 。所以在账户系统中我们通常把 salt 和 hash 值一起存放，或者直接作为 hash 值的一部分。</p>
-<p>salt 不必是秘密的。仅仅通过让 hash 随机，这样就可以让查表攻击，反向查表攻击，或者彩虹表攻击变得无效。攻击者无法提前知道 salt 将是什么，这样也就不能预先计算出查询表和彩虹表。如果每个用户都使用不同的 salt ，这样反向查表攻击也就无效了。</p>
-<p>在下一节中，我们将看到通常 salt 是怎样被错误实现的。</p>
-<h2 id="错误的方式：短的-salt-和重用-salt"><a href="#错误的方式：短的-salt-和重用-salt" class="headerlink" title="错误的方式：短的 salt 和重用 salt"></a>错误的方式：短的 salt 和重用 salt</h2><p>最常见的实现 salt 的错误是在多个 hash 中使用同一个 salt ，或者 salt 长度过短。</p>
-<h3 id="重用-salt"><a href="#重用-salt" class="headerlink" title="重用 salt"></a>重用 salt</h3><p>一个常见的错误是在每个 hash 中都使用了同样的 salt 。有些是直接把 salt 硬写到代码中，有些是只随机生成了一次。这是无效的，如果两个用户有同一个密码，那么他们将有同样一个 hash 。攻击者还是可以通过反向查表来对每个 hash 进行词典攻击。他们只需要在计算 hash 之前把 salt 加上即可。如果 salt 是硬编码到一个流行的产品中，查表攻击和彩虹表攻击可以专为这个 salt 设计，这样就很容易攻击这个产品的 hash 。</p>
-<p>每次当新用户创建或者修改密码的时候，都必须要重新生成一个全新的随机 salt 。</p>
-<h3 id="过短-salt"><a href="#过短-salt" class="headerlink" title="过短 salt"></a>过短 salt</h3><p>如果 salt 过短，攻击者可以为每个 slat 都创建一个查询表。举个例子，如果 salt 只有三位 ASCII 码，这就只有 95x95x95=857,375 种可能的 salt 。这可能看起来不少了，但是如果每个查询表都只包含了 1MB 的最常见的密码，他们总共也就才 837GB ，如今 1000GB 的硬盘都可以以低于 $100 的价格买到了，这点空间根本不算什么。</p>
-<p>同样地，用户名不应该被作为 salt 。在一个服务中用户名可能是唯一的，但是很可能在其他服务中这个用户名被重用了。攻击者可以创建常用用户名的查询表然后用来攻击基于用户名 salt 的 hash 。为了让攻击者不能为每个可能的 salt 创建一个查询表， salt 必须要足够的长。一个较好的建议是使用跟输出 hash 一样长度的 salt 。例如：SHA256 输出是 256 比特 (32字节)，所以 salt 应该至少有 32 个随机的字节。</p>
-<h2 id="错误的方式：双重-hash-和古怪的-hash-算法"><a href="#错误的方式：双重-hash-和古怪的-hash-算法" class="headerlink" title="错误的方式：双重 hash 和古怪的 hash 算法"></a>错误的方式：双重 hash 和古怪的 hash 算法</h2><p>本节涵盖了另外一种常见的密码 hash 误解：古怪的 hash 实际上，这样做收益很小。算法组合。很容易得意忘形地去组合不同的 hash 算法，以为可以让结果更加安全。这样做将产生互操作性问题，也有可能让 hash 变得更不安全。永远不要尝试发明自己的加密算法，请使用专家发明的标准算法。有些人可能会争辩说使用多重 hash 将让生成 hash 的时间变长，同时就可以让攻击变慢，但是之后我们将提供一种让破解变慢的更好方式。</p>
-<p>下面是一些我在网上论坛曾经看到过的被建议的古怪 hash 算法：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">md5(sha1($password));</span><br><span class="line">md5(md5($salt) . md5($password));</span><br><span class="line">sha1(sha1($password));</span><br><span class="line">sha1(str_rot13($password . $salt));</span><br><span class="line">md5(sha1(md5(md5($password) . sha1($password)) . md5($password)));</span><br></pre></td></tr></table></figure>
-<p>请不要使用任何一种。</p>
-<p>注意：这一节被认为是有争议的。我接到了大量的邮件争辩说古怪的 hash 算法是有效的方式，因为如果攻击者不知道使用了什么 hash 算法，这样就不太可能预先计算彩虹表，并且这将导致更长的 hash 计算时间。</p>
-<p>攻击者不可能在不知道算法的情况下攻击 hash 值，但是注意 Kerckhoffs 的原则，攻击者通常都可以访问到源代码（尤其是如果是免费和开源的软件），并且对于采用了一些 hash 组合的系统，采用逆向工程得到算法并不困难。使用古怪的　hash 算法的确将耗费更多的时间，但是这只是常数级的。最好还是用一种设计好的难以并行化的迭代算法（下面将讨论）。并且，使用正确的加盐方式已经解决了彩虹表的问题。</p>
-<p>如果你想使用一种标准化的 “古怪” 加密方式，例如 HMAC，这是可以的。但是如果你的理由是为了让计算变得更慢，请先阅读下面的关于键值伸展一节。</p>
-<p>比起使用古怪 hash 算法可能带来的完全不安全的 hash 问题和可能引起的互操作性问题，这点儿好处不值一提。明显最好使用标准的和经过完整测试的算法。</p>
-<h2 id="Hash-碰撞"><a href="#Hash-碰撞" class="headerlink" title="Hash 碰撞"></a>Hash 碰撞</h2><p>由于 hash 算法是将任意长度的数据映射为确定长度的数据，所以必然会存在一些数据被的 hash 值相同。加密 hash 函数设计为让这些碰撞难以被找到。一直以来，密码学家都发现攻击者试图攻击 hash 函数让找到碰撞更加容易。最近的一个例子是 MD5 hash 算法实际上已经被发现了碰撞。碰撞攻击是找到一个不是用户密码的字符串但是却有着同样 hash 值。但是，在一个较弱的 hash 算法比如 MD5 算法中找到碰撞已经需要巨大的计算能力了，所以在实际使用中偶然遇到 hash 碰撞几乎是不可能的。在所有的实际用途中，一个使用 MD5 加盐的 hash 密码基本和使用 SHA256 加盐同样的安全。</p>
-<p>不过，如果可以的话还是推荐使用更加安全的加密算法例如 SHA256,SHA512,RipeMD,或 WHIRLPOOL。</p>
-<h2 id="正确的方式：怎样正确地计算-hash"><a href="#正确的方式：怎样正确地计算-hash" class="headerlink" title="正确的方式：怎样正确地计算 hash"></a>正确的方式：怎样正确地计算 hash</h2><p>这一节介绍了密码应该怎样被 hash 的正确方式。第一小节杭盖了最基本的——也是实际上需要的所有东西。接下来的一小节解释了这些基本的方式可以怎样被增强让其更加难以攻击。</p>
-<h3 id="最基本的：加盐散列"><a href="#最基本的：加盐散列" class="headerlink" title="最基本的：加盐散列"></a>最基本的：加盐散列</h3><p><strong>警告：不要仅仅只读这一节。你绝对应该实现下一节的东西：“让攻击密码更加困难：减慢 hash 速度”。</strong></p>
-<p>我们已经看到了恶意攻击者可以怎样快速地通过查询表和彩虹表来攻击文本密码。我们也了解到了通过加盐来让 hash 值变得随机可以解决这个问题。但是怎样产生盐呢？怎样应用到密码中呢？</p>
-<p>产生盐应该使用 <em>加密安全伪随机产生器(Cryptographically Secure Pseudo-Random Number Generator——CSRPNG)</em>。CSPRNG 和普通的伪随机产生器有非常大的差异，例如 C 语言的 rand() 函数。如其名一样，CSRPNG是设计为加密安全的，意味着他们是一个高度的随机并且不能完全预测到。我们不希望我们的盐被预测到，所以我们必须使用 CSPRNG 。下面的表格中列举了一些流行的编程语言的 CSPRNG 方法：</p>
-<p>Platform                            CSPRNG<br>PHP                                    mcrypt_create_iv, openssl_random_pseudo_bytes<br>Java                                    centered<br>Dot NET (C#, VB)                    System.Security.Cryptography.RNGCryptoServiceProvider<br>Ruby                                    SecureRandom<br>Python                                    os.urandom<br>Perl                                    Math::Random::Secure<br>C/C++ (Windows API)                    CryptGenRandom<br>Any language on GNU/Linux or Unix    Read from /dev/random or /dev/urandom</p>
-<p>每个用户每个密码的盐都必须要是唯一的。每次用户创建账户或者修改密码，密码都必须使用新的盐来计算 hash 。绝不要重用盐。并且盐的长度要足够的长，这样才有足够多的可能性。首要的规则是，至少让你的盐和 hash 函数输出长度一样长。盐应该和 hash 值一起存放在用户账户表中。</p>
-<h3 id="存储密码："><a href="#存储密码：" class="headerlink" title="存储密码："></a>存储密码：</h3><p>使用 CSPRNG 产生一个足够长的随机盐。<br>把盐附加到密码后面然后使用 标准 的 hash 加密函数比如 SHA256 计算 hash 值。<br>在用户的数据库中同时保存盐和 hash 值。</p>
-<h3 id="验证密码："><a href="#验证密码：" class="headerlink" title="验证密码："></a>验证密码：</h3><p>从数据库中取出用户的盐和 hash 值。<br>附加盐到提供的密码后面然后使用同样的 hash 算法计算 hash 值。<br>比较给定密码的 hash 和数据库的 hash 。如果匹配，密码就是正确的。否则，密码是错误的。<br>在本文的底部，有加盐密码 hash 的多种语言实现版本：PHP,C#,Java 和 Ruby 。</p>
-<h3 id="在-web-应用中，永远在服务器计算-hash-。"><a href="#在-web-应用中，永远在服务器计算-hash-。" class="headerlink" title="在 web 应用中，永远在服务器计算 hash 。"></a>在 web 应用中，永远在服务器计算 hash 。</h3><p>如果你在写一个 web 应用，你可能想知道在哪儿进行 hash 计算。是在用户的浏览器中使用 Javascript 计算 hash ，还是干净地传递给服务器然后计算。</p>
-<p>即使你使用 Javascript 对用户的密码进行了 hash ，你还是必须在服务器上再次进行 hash 。假设有一个网站只是在用户的浏览器中进行了 hash 但是没有在服务器上进行 hash 。为了验证一个用户，网站必须接受一个浏览器的 hash 然后检查这个 hash 是否和数据库中的hash 匹配。这似乎看起来更加安全了，因为用户的密码从来都没有传递到服务器，但是这是错误的。</p>
-<p>问题出在客户端 hash 逻辑产生了用户的密码。如果用户需要验证，他们就必须告诉服务器密码的 hash 值。如果有坏人知道了用户的 hash 值，那么他就不用知道用户的密码就可以通过认证了！如果一个用户得到了这个假设网站的数据库，他不需要知道密码立即就能访问每个用户的账户了。</p>
-<p>这不是说你不能在浏览器端做 hash ，只是如果你这样做了，你同样必须在服务器端做 hash 。在浏览器端做 hash 是一个好的想法，但是要在你的实现中考虑到以下这些点：</p>
-<p>客户端 hash<em>不是</em>HTTPS（SSL/TSL）的替代品。如果浏览器和服务器之间的连接不安全，那么中间人就可以修改下载的 Javascript 代码移除掉其中的 hash 函数，然后直接得到用户的密码。<br>有些浏览器不支持 Javascript，有些用户会禁用掉浏览器的 Javascript 。为了最大的兼容性，你的应用应该判断浏览器是否支持 Javascript ，如果不，就在服务器端模拟 Javascript 的 hash 。<br>你也应该在客户端 hash 的时候加盐。最明显的做法是客户端请求服务器获得用户的盐。不要这样做，因为这样就让坏人不需要知道用户的密码就能检测用户名是否有效了。由于你在服务器上已经使用加盐的 hash （当然也使用了好的盐），在客户端上你可以使用用户名（或者邮箱）连接一个特殊的字符串（例如域名）的方式作为盐即可。</p>
-<h3 id="让破解密码更难：减慢-hash-速度"><a href="#让破解密码更难：减慢-hash-速度" class="headerlink" title="让破解密码更难：减慢 hash 速度"></a>让破解密码更难：减慢 hash 速度</h3><p>加盐让攻击者不能通过专业的攻击方式比如查表攻击和彩虹表攻击来快速攻击大量的 hash ，但是却不能阻止攻击者针对每一个密码独立地进行词典攻击或者暴力攻击。高端的显卡（GPU）和定制的硬件可以每秒进行数十亿次 hash 计算，所以这种攻击任然非常有效。为了降低这种攻击的效率，我们可以用一种叫做 拉伸 key（key stretching）的技术。</p>
-<p>这种技术的思想是让 hash 计算十分缓慢，这样即使是非常快的 GPU 或者定制的硬件进行词典攻击和暴力破解也将变得缓慢而毫无意义。目标是让 hash 算法变得缓慢来阻碍攻击，但是仍然要保证足够地快而不会影响到用户。</p>
-<p>key 拉伸是通过使用特殊的 CPU 密集的 hash 算法来实现。不要试图通过使用迭代 hash 算法来实现自己简单的方式，这样可以通过硬件的并行计算让其像普通的 hash 算法一样的快。使用标准的算法例如 PBKDF2 或者 bcrypt。你可以在这里找到一个 PHP 版本的实现： PBKDF2。</p>
-<p>这些算法把安全因子或者迭代数作为参数。这个值决定了 hash 算法有多慢。对桌面应用或者只能手机应用来说，最好的决定这个参数值的方式是在设备上运行基准测试，找到让 hash 耗时大约半秒的值。这样你的程序就是足够的安全而且不会影响到用户体验。</p>
-<p>如果你在 web 应用上使用了 key 拉伸技术，要注意需要计算大量认证请求的资源，因为 key 拉伸技术可能让 DoS 攻击更加容易。我仍然建议使用 key 拉伸技术，但是使用一个更低的迭代值。你应该基于计算资源和最大的验证请求来计算迭代值。DoS 攻击可以通过让用户每次登录的时候输入验证码来解决。总是把你的程序设计为可以在将来增加或者减少迭代值。</p>
-<p>如果你担心计算负担，但是又想在 web 应用中使用 key 拉伸技术，考虑在用户的浏览器中使用 Javascript 运行 key 拉伸算法。标准的 Javascript 加密库 已经包含了PBKDF2。迭代数应该被设计得足够的低让移动浏览器也可以运行，并且如果客户端浏览器不支持 Javascript 还要可以回退到服务器进行计算。客户端的 key 拉伸并没有去掉服务器端 hash 的必要性。你应该像对待一个普通密码一样计算客户端 hash 的 hash 值。</p>
-<h3 id="不可能被攻破的-hash：密钥-hash-和密码硬件-hash"><a href="#不可能被攻破的-hash：密钥-hash-和密码硬件-hash" class="headerlink" title="不可能被攻破的 hash：密钥 hash 和密码硬件 hash"></a>不可能被攻破的 hash：密钥 hash 和密码硬件 hash</h3><p>只要攻击者可以通过使用 hash 来检测猜测的密码是否正确，他们总是可以运行词典攻击或者暴力破解攻击。下一步是添加一个<em>密钥</em>使得只有知道密钥的人才能使用 hash 进行密码验证。可以通过两种方式来完成。可以使用密码算法 AES 对 hash 值进行加密，或者也可以使用密钥 hash 算法例如 HMAC 把密钥包含在 hash 中。</p>
-<p>这不像说得那么简单。即使在突破事件中这个密钥也必须保证对攻击者的保密。如果一个攻击者获得了访问系统完全的权限，那么不管它存放在哪儿都会被偷走。密钥必须被保存在一个外部系统中，例如和进行密码验证的服务器物理隔离的地方，或者一个附加在服务器上的特殊硬件例如 YubiHSM。</p>
-<p>我强烈推荐拥有大规模用户（超过 100,000）的服务使用这种方法。我觉得对任何超过 1,000,000 用户的任务都是需要的。</p>
-<p>如果你担负不起多台专用的服务器或者特殊的硬件设备，你还是可以通过把 key 存放在一个单独的网络服务器上来获得一些好处。大多数的数据库都是被 SQL注入 攻破的，这种方式一般都不会给攻击者访问本地文件系统的权限（如果你的数据库可以访问文件系统，请禁用掉）。如果你生成了一个随机的 key 并且存放在一个不能通过网络访问的文件中并且使用到加盐 hash 中，这样你的 hash 就不会被简单的 SQL 注入攻击给破解掉。不要把密钥硬编码到代码中，而是当应用安全的时候随机地生成一个。这种方式没有单独的系统那么安全，因为如果 web 应用有 SQL 注入漏洞，那也可能有其他的方式，例如本地文件包含问题，这样攻击者就可以读取密钥文件。但是这也比什么都不做强。</p>
-<p>请注意密钥 hash 没有去掉加盐的必要性。聪明的攻击者最终将还是找到威胁密钥的方法，所以使用加盐 hash 和 key 拉伸技术仍然是重要的。</p>
-<h2 id="其他安全措施"><a href="#其他安全措施" class="headerlink" title="其他安全措施"></a>其他安全措施</h2><p>密码 hash 在攻破事件中保护了密码。但是它没有让整个系统更安全。为了保证密码 hash （还有其他用户数据）不被盗走还需要做更多。</p>
-<p>即使是有经验的开发者也应该接受安全教育以写出更安全的应用。一个非常好的学习 web 应用漏洞的资源是 网络应用安全开放项目(OWASP)。OWASP 十大漏洞表 是一个很好的介绍。除非你已经理解了表上的所有漏洞，否则不要尝试写一个数据敏感的应用。雇主有责任让所有开发者接受安全应用开发教育。</p>
-<p>对你的应用进行一个第三方的渗透测试是一个好的办法。即使最好的程序员也会犯错误，所以让安全专家审查代码以发现潜在的漏洞是有道理的。寻找一个值得信赖的组织（或者自己雇人）定期审查你的代码。在应用开发的早期就应该进行安全审查并且贯穿整个应用的开发。</p>
-<p>通过监控来判断网站是否被攻击是重要的。我建议至少雇佣一个全职的人员进行判定和响应安全破坏。一旦一个破坏未被发现，攻击者可以通过恶意软件感染访问者，所以破坏被判断和正确响应是极其重要的。</p>
-<h2 id="常见问题"><a href="#常见问题" class="headerlink" title="常见问题"></a>常见问题</h2><h3 id="我应该使用什么-hash-算法"><a href="#我应该使用什么-hash-算法" class="headerlink" title="我应该使用什么 hash 算法"></a>我应该使用什么 hash 算法</h3><h4 id="使用："><a href="#使用：" class="headerlink" title="使用："></a>使用：</h4><ul>
-<li>本文底部的 PHP 源码，Java 源码，C# 源码或者 Ruby 源码。</li>
-<li>OpenWall 的便携式 PHP 密码 hash 框架</li>
-<li>任何现代的经过良好测试的 hash 加密算法，例如 SHA256,SHA512,RipeMD,WHIRLPOOL,SHA3 等</li>
-<li>良好设计的 key 拉伸算法例如 PBKDF2,bcrypt,scrypt</li>
-<li>安全版本的 crypt ($2y$, $5$, $6$)</li>
-</ul>
-<h4 id="不要使用："><a href="#不要使用：" class="headerlink" title="不要使用："></a>不要使用：</h4><ul>
-<li>过期的 hash 算法例如 MD5 或者 SHA1。</li>
-<li>crypt 的不安全版本($1$, $2$, $2x$, $3$)</li>
-<li>任何你自己设计的算法。只是用公共域名下的和密码学专家良好设计的技术</li>
-<li>即使没有针对 MD5 和 SHA1 的密码攻击让其更容易破解，他们也已经太老了并且不足以用来进行密码存储了。所以我不建议使用它们。一个例外是 PBKDF2 ,它经常被使用 SHA1 来作为底层的实现。</li>
-</ul>
-<h3 id="如果用户忘记了密码，我应该怎样让他们重置？"><a href="#如果用户忘记了密码，我应该怎样让他们重置？" class="headerlink" title="如果用户忘记了密码，我应该怎样让他们重置？"></a>如果用户忘记了密码，我应该怎样让他们重置？</h3><p>我个人觉得现在广泛使用的密码重置机制都是不安全的。如果你有一个高度安全的需求，例如一个加密服务，不要允许用户重置密码。</p>
-<p>大多数站点使用邮件来验证忘记了密码的用户。为了这样，生成一个随机的一次使用的 token 强绑定到账户上。把这个包含到发送给用户邮箱的重置密码链接中。当用户点击了一个包含有效的 token 的重置密码的链接，提示用户输入一个新的密码。确保 token 和用户的账户是强关联的，这样可以避免一个用户通过自己的邮箱收到的 token 去重置其他用户的密码。</p>
-<p>第一重要的是这个 token 应该被设置为 15 分钟或者使用了之后就过期。在用户登录之后（使用了记住密码）或者请求了另外一个重置 token 就让任何存在的密码 token 过期是一个好方法。如果一个 token 不过期，那么它可以被永远用来进入用户的账户。邮件 (SMTP) 是一个纯文本协议，在网络上可能有恶意的路由记录邮件传播。这样，一个用户的邮件账户（包括重置密码的链接）可能在密码被更改很久之后被使用。所以尽快让 token 过期可以降低用户暴露给攻击者。</p>
-<p>攻击者可能会自己修改 token ，所以不要存储用户的账户信息或者超时信息。他们只应该是一个不可预知的随机的二进制字符串用于在数据库中定位记录。</p>
-<p>绝不要通过邮件发送新密码给用户。记得当用户重置密码的时候重新生成一个随机的盐。不要重复使用原来的盐。</p>
-<h3 id="如果我的用户账户数据库泄漏或者被黑了我应该怎么做？"><a href="#如果我的用户账户数据库泄漏或者被黑了我应该怎么做？" class="headerlink" title="如果我的用户账户数据库泄漏或者被黑了我应该怎么做？"></a>如果我的用户账户数据库泄漏或者被黑了我应该怎么做？</h3><p>你最先应该做的事情是找到系统是怎么被攻破的然后堵上攻击者进入的漏洞。如果你不擅长相应攻破，我强烈建议你雇佣一个第三方的安全公司。</p>
-<p>掩盖破解和希望没人注意是诱人的。但是，视图掩盖一次攻破可能让事态更糟，因为你让你的用户在将来要承受密码泄露和其他个人信息可能被泄露的风险。你必须尽快通知你的用户——即使你还没完全弄明白发生了什么。在你的主页上放一个跳转到详细信息页面的通知链接，如果可以的话给每个用户发送通知邮件。</p>
-<p>给你的用户解释他们的密码是怎样被保护的——希望是加盐的 hash ——即使是被加盐的 hash 保护着，一个恶意攻击者也可能使用词典攻击和暴力破解来攻击 hash 。恶意攻击者可能会使用它们得到的密码在其他站点上登录用户的账户，因为用户可能在其他站点上使用同样的密码。告知你的用户这种风险，建议他们修改其他站点或服务上使用的相似密码的账户密码。强迫用户在下次登录你的服务时修改他们的密码。大多数用户会尝试 “修改” 为原来的的密码来绕过这种强迫。使用当前密码 hash 确保他们不会这样做。</p>
-<p>即使是使用了加盐的 hash ，攻击者也可能会很快攻破弱密码的账户。为了减少攻击者使用这些密码的机会，除了当前密码，你还应该给所有用户发邮件直到他们修改了密码为止。查看上一个问题了解如何实现邮件认证。</p>
-<p>同时也请告诉你的用户网站存储了什么个人信息。如果你的数据库包含了信用卡信息，你应该指导你的用户查看最近的账单并且取消他们的信用卡。</p>
-<h3 id="如何设置我的密码策略？我应该强制用户使用强密码吗？"><a href="#如何设置我的密码策略？我应该强制用户使用强密码吗？" class="headerlink" title="如何设置我的密码策略？我应该强制用户使用强密码吗？"></a>如何设置我的密码策略？我应该强制用户使用强密码吗？</h3><p>如果你的服务没有一个严格的安全要求，那就不要限制你的用户。我建议当用户输入密码的时候显示密码的强度，让他们自己决定他们的密码想要的强度。如果你有一个特别的安全需求，强制最低12位的密码并且要求至少两位字母，两位数字和两个符号。</p>
-<p>不要强制你的用户半年内改一次密码，这样将让用户疲劳而不愿意选择好的密码。替代的方式是，培养用户当他们觉得密码可能不安全的时候修改密码，并且让他们不要把密码告诉任何人。如果是一个商业设置，鼓励用户使用工作时间记住和练习他们的密码。</p>
-<h3 id="如果攻击者已经访问了我的数据库，他们不能使用它们自己的-hash-替代我的密码-hash-然后登录吗？"><a href="#如果攻击者已经访问了我的数据库，他们不能使用它们自己的-hash-替代我的密码-hash-然后登录吗？" class="headerlink" title="如果攻击者已经访问了我的数据库，他们不能使用它们自己的 hash 替代我的密码 hash 然后登录吗？"></a>如果攻击者已经访问了我的数据库，他们不能使用它们自己的 hash 替代我的密码 hash 然后登录吗？</h3><p>是的，但是如果某人已经访问到了你的数据库，他们可能已经可以访问你服务器上的所有东西了，所以他们不需要登录来得到他们需要的东西。hash 密码的目的（在一个网站上）是保护网站不被攻破，而不是当攻破发生的时候保护密码。</p>
-<p>你可以通过设置不同账户的权限来限制 SQL 注意攻击时 hash 被替换。一个用于创建账户的代码而另外一个用于登录。创建账户的代码应该可以读写数据库而登录代码只需要可以读就行了。</p>
-<h3 id="为什么我应该使用特殊的算法例如-HMAC-？为什么我不能直接把密码附加到密钥后面呢？"><a href="#为什么我应该使用特殊的算法例如-HMAC-？为什么我不能直接把密码附加到密钥后面呢？" class="headerlink" title="为什么我应该使用特殊的算法例如 HMAC ？为什么我不能直接把密码附加到密钥后面呢？"></a>为什么我应该使用特殊的算法例如 HMAC ？为什么我不能直接把密码附加到密钥后面呢？</h3><p>像 MD5，SHA1 和 SHA2 这些 hash 算法都使用了 Merkle–Damgård 结构，这使得他们容易受到已知长度攻击。这一位这提供一个 hash H(X)，攻击者可以找到针对任何其他字符串 Y 的 H(pad(X)+Y) 的值，而不需要知道 X 。 pad(X) 是 hash 算法使用的填充函数。</p>
-<p>这意味着如果提供 H(key+message) 的 hash，攻击者可以不用知道密钥计算 H(pad(key+message)+extension)。如果 hash 是用于消息验证码，使用 key 来阻止攻击者修改消息或者使用另外一个有效的 hash 替换它，这样系统就失败了，因为攻击者已经有了一个 message+extension 的有效的 hash 了。</p>
-<p>现在尚不清楚这样可以让攻击者攻击密码是否更快。但是，因为这种攻击，使用一个纯文本的 hash 算法作为 key 拉伸被认为是不好的尝试。可能有一天聪明的密码研究人员会找到使用这种攻击方式快速攻击的方法，所以请使用 HMAC 。</p>
-<h3 id="盐应该加在密码的前面还是后面？"><a href="#盐应该加在密码的前面还是后面？" class="headerlink" title="盐应该加在密码的前面还是后面？"></a>盐应该加在密码的前面还是后面？</h3><p>这没关系，但是请选择一种并且坚持使用。把盐加在密码的前面看起来似乎更常见。</p>
-<h3 id="为什么本页上的-hash-在有限次数时间内比较-hash-？"><a href="#为什么本页上的-hash-在有限次数时间内比较-hash-？" class="headerlink" title="为什么本页上的 hash 在有限次数时间内比较 hash ？"></a>为什么本页上的 hash 在有限次数时间内比较 hash ？</h3><p>在常数次数时间内对比 hash 确保了攻击者不能在一个线上系统使用时间攻击提取到密码的 hash ，然后离线破解。</p>
-<p>对比两个序列的字节（字符串）是否相同的标准方式是首先对比第一个字节，然后是第二个，然后是第三个…一旦你发现一个字节不一样，你就知道他们是不同的然后可以立即返回否定的结果。如果你通过整个序列都没有发现不同的字节，你就知道两个字符串是一样的然后可以返回肯定的结果。这意味着如果对比的字符串匹配程度不一样，就可能耗用不同的时间。</p>
-<p>举个例子，一个标准的比较字符串 “xyzabc” 和 “abczyx” 的方法将立即发现第一个字符是不一样的然后将不再比较剩下的字符串。但是，如果比较 “aaaaaaaaaaB” 和 “aaaaaaaaaaZ”，比较算法将一直扫描 “a” 字母这一块知道发现这两个字符串是不一样的。</p>
-<p>假设一个攻击者通过每秒尝试一次想要攻击一个速率限制的验证系统。同时假设攻击者知道密码 hash 的所有参数（盐，hash 类型等），仅仅只是不知道 hash 值和密码（显然地）。如果攻击者可以得到一个在线系统比对自己提供的 hash 值和真实密码的　hash 值的耗时，他可以通过传递速率限制使用耗时攻击得到 hash 字符串然后离线进行破解。首先，攻击者找到 256 个有每种可能的开头字节的字符串。他发送每一个字符串给在线系统，记录系统相应的时间。耗时最长的就是第一个字节和真实 hash 第一个字节匹配的。攻击者现在就知道第一个字节了，然后可以通过相似的方式得到第二个字节，然后是第三个等等。一旦攻击者知道了足够的 hash 值，他就可以使用自己的硬件进行攻破，不再需要对系统进行速率限制。</p>
-<p>看起来在网络上进行耗时攻击是不可行的。但是，它已经被实现了，并且已经可以实际使用了。这就是为什么本文中的代码不论字符串多长，都使用相同的时间进行比对。</p>
-<h3 id="减速比对代码是如何工作的？"><a href="#减速比对代码是如何工作的？" class="headerlink" title="减速比对代码是如何工作的？"></a>减速比对代码是如何工作的？</h3><p>之前的问题解释了为什么需要减速比对，这个问题解释代码是如何工作的：</p>
-<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> boolean <span class="title">slowEquals</span>(<span class="params"><span class="keyword">byte</span>[] a, <span class="keyword">byte</span>[] b</span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">        <span class="keyword">int</span> diff = a.length ^ b.length;</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; a.length &amp;&amp; i &lt; b.length; i++)</span><br><span class="line">        diff |= a[i] ^ b[i];</span><br><span class="line">        <span class="keyword">return</span> diff == <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>上面的代码使用了异或 “^” 操作符代替 “==” 来获得比较的结果。原因将在下面解释。两个数字的的异或只有在他们都完全相同的时候才会是0.这是因为 00=0，11=0,01=1,10=1。如果我们对两个证书的所有位都应用异或运算，只有在两个数完全相同的时候结果才可能是0.</p>
-<p>所以，在第一行中，如果 a 的长度和 b 的长度相同， diff 变量将会是 0 。但是如果不是，它将是非零值。接下来，我们使用异或比对字节数组，并且使用对结果和 diff 变量使用或操作。如果字节不相同， diff 将被设置为非零值。因为或操作绝不会把字节设为否，唯一放让 diff 结果为 0 的条件是在循环开始前其值为 0 （a,b 的长度相同）并且两个数组的所有字节都相同（没有异或的值为非零值）。</p>
-<p>使用异或代替 “==” 操作符的理由是 “==” 操作符通常被 翻译/编译/解释 为树。举个例子： C 语言的 diff &amp;= a == b 可能被编译为以下 x86 指令集合：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">MOV EAX, [A]</span><br><span class="line">CMP [B], EAX</span><br><span class="line">JZ equal</span><br><span class="line">JMP done</span><br><span class="line">equal:</span><br><span class="line">AND [VALID], 1</span><br><span class="line">done:</span><br><span class="line">AND [VALID], 0</span><br></pre></td></tr></table></figure>
-<p>这种分支使得代码的执行会根据整数是否相同还有 CPU 的内部分支预测状态而不同。</p>
-<p>C 语言的 diff |= a ^ b 应该会编译成类似下面这样，这样执行时间就不依赖数字是否相等了：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">MOV EAX, [A]</span><br><span class="line">XOR EAX, [B]</span><br><span class="line">OR [DIFF], EAX</span><br></pre></td></tr></table></figure>
-<h3 id="为什么要这么麻烦地使用-hash-？"><a href="#为什么要这么麻烦地使用-hash-？" class="headerlink" title="为什么要这么麻烦地使用 hash ？"></a>为什么要这么麻烦地使用 hash ？</h3><p>你的用户在你的网站上输入了密码。他们相信你的安全措施。如果你的数据库被黑掉了，并且你的用户的密码没有任何保护，然后恶意的黑客就会使用这些密码危害你的用户在其他站点或服务商的账号（大多数人都到处使用同样的密码）。这不仅是一你的安全风险，而也是用户的。你应该对你的用户的安全负责。</p>
-<h2 id="PHP-PBKDF2-密码-hash-代码"><a href="#PHP-PBKDF2-密码-hash-代码" class="headerlink" title="PHP PBKDF2 密码 hash 代码"></a>PHP PBKDF2 密码 hash 代码</h2><p>下面的代码是在 PHP 中安全地实现 PBKDF2 。你可以在 <a href="https://defuse.ca/php-pbkdf2.htm" target="_blank" rel="noopener">Defuse Security’s PBKDF2 for PHP</a> 找到配套测试和基准测试。</p>
-<p>下载 <a href="https://crackstation.net/source/password-hashing/PasswordHash.php" target="_blank" rel="noopener">PasswordHash.php</a></p>
-<p>如果你想兼容 PHP 和 C# 的实现，看<a href="https://github.com/defuse/password-hashing/tree/master/compatible" target="_blank" rel="noopener">这里</a>。</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * Password Hashing With PBKDF2 (http://crackstation.net/hashing-security.htm).</span></span><br><span class="line"><span class="comment"> * Copyright (c) 2013, Taylor Hornby</span></span><br><span class="line"><span class="comment"> * All rights reserved.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * Redistribution and use in source and binary forms, with or without </span></span><br><span class="line"><span class="comment"> * modification, are permitted provided that the following conditions are met:</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * 1. Redistributions of source code must retain the above copyright notice, </span></span><br><span class="line"><span class="comment"> * this list of conditions and the following disclaimer.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * 2. Redistributions in binary form must reproduce the above copyright notice,</span></span><br><span class="line"><span class="comment"> * this list of conditions and the following disclaimer in the documentation </span></span><br><span class="line"><span class="comment"> * and/or other materials provided with the distribution.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" </span></span><br><span class="line"><span class="comment"> * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE </span></span><br><span class="line"><span class="comment"> * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE </span></span><br><span class="line"><span class="comment"> * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE </span></span><br><span class="line"><span class="comment"> * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR </span></span><br><span class="line"><span class="comment"> * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF </span></span><br><span class="line"><span class="comment"> * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS </span></span><br><span class="line"><span class="comment"> * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN </span></span><br><span class="line"><span class="comment"> * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) </span></span><br><span class="line"><span class="comment"> * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE </span></span><br><span class="line"><span class="comment"> * POSSIBILITY OF SUCH DAMAGE.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="comment">// These constants may be changed without breaking existing hashes.</span></span><br><span class="line">define(<span class="string">"PBKDF2_HASH_ALGORITHM"</span>, <span class="string">"sha256"</span>);</span><br><span class="line">define(<span class="string">"PBKDF2_ITERATIONS"</span>, <span class="number">1000</span>);</span><br><span class="line">define(<span class="string">"PBKDF2_SALT_BYTE_SIZE"</span>, <span class="number">24</span>);</span><br><span class="line">define(<span class="string">"PBKDF2_HASH_BYTE_SIZE"</span>, <span class="number">24</span>);</span><br><span class="line">define(<span class="string">"HASH_SECTIONS"</span>, <span class="number">4</span>);</span><br><span class="line">define(<span class="string">"HASH_ALGORITHM_INDEX"</span>, <span class="number">0</span>);</span><br><span class="line">define(<span class="string">"HASH_ITERATION_INDEX"</span>, <span class="number">1</span>);</span><br><span class="line">define(<span class="string">"HASH_SALT_INDEX"</span>, <span class="number">2</span>);</span><br><span class="line">define(<span class="string">"HASH_PBKDF2_INDEX"</span>, <span class="number">3</span>);</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">create_hash</span><span class="params">($password)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">// format: algorithm:iterations:salt:hash</span></span><br><span class="line">    $salt = base64_encode(mcrypt_create_iv(PBKDF2_SALT_BYTE_SIZE, MCRYPT_DEV_URANDOM));</span><br><span class="line">    <span class="keyword">return</span> PBKDF2_HASH_ALGORITHM . <span class="string">":"</span> . PBKDF2_ITERATIONS . <span class="string">":"</span> .  $salt . <span class="string">":"</span> .</span><br><span class="line">        base64_encode(pbkdf2(</span><br><span class="line">            PBKDF2_HASH_ALGORITHM,</span><br><span class="line">            $password,</span><br><span class="line">            $salt,</span><br><span class="line">            PBKDF2_ITERATIONS,</span><br><span class="line">            PBKDF2_HASH_BYTE_SIZE,</span><br><span class="line">            <span class="keyword">true</span></span><br><span class="line">        ));</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">validate_password</span><span class="params">($password, $correct_hash)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    $params = explode(<span class="string">":"</span>, $correct_hash);</span><br><span class="line">    <span class="keyword">if</span>(count($params) &lt; HASH_SECTIONS)</span><br><span class="line">       <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    $pbkdf2 = base64_decode($params[HASH_PBKDF2_INDEX]);</span><br><span class="line">    <span class="keyword">return</span> slow_equals(</span><br><span class="line">        $pbkdf2,</span><br><span class="line">        pbkdf2(</span><br><span class="line">            $params[HASH_ALGORITHM_INDEX],</span><br><span class="line">            $password,</span><br><span class="line">            $params[HASH_SALT_INDEX],</span><br><span class="line">            (int)$params[HASH_ITERATION_INDEX],</span><br><span class="line">            strlen($pbkdf2),</span><br><span class="line">            <span class="keyword">true</span></span><br><span class="line">        )</span><br><span class="line">    );</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// Compares two strings $a and $b in length-constant time.</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">slow_equals</span><span class="params">($a, $b)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    $diff = strlen($a) ^ strlen($b);</span><br><span class="line">    <span class="keyword">for</span>($i = <span class="number">0</span>; $i &lt; strlen($a) &amp;&amp; $i &lt; strlen($b); $i++)</span><br><span class="line">    &#123;</span><br><span class="line">        $diff |= ord($a[$i]) ^ ord($b[$i]);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> $diff === <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * PBKDF2 key derivation function as defined by RSA's PKCS #5: https://www.ietf.org/rfc/rfc2898.txt</span></span><br><span class="line"><span class="comment"> * $algorithm - The hash algorithm to use. Recommended: SHA256</span></span><br><span class="line"><span class="comment"> * $password - The password.</span></span><br><span class="line"><span class="comment"> * $salt - A salt that is unique to the password.</span></span><br><span class="line"><span class="comment"> * $count - Iteration count. Higher is better, but slower. Recommended: At least 1000.</span></span><br><span class="line"><span class="comment"> * $key_length - The length of the derived key in bytes.</span></span><br><span class="line"><span class="comment"> * $raw_output - If true, the key is returned in raw binary format. Hex encoded otherwise.</span></span><br><span class="line"><span class="comment"> * Returns: A $key_length-byte key derived from the password and salt.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * Test vectors can be found here: https://www.ietf.org/rfc/rfc6070.txt</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * This implementation of PBKDF2 was originally created by https://defuse.ca</span></span><br><span class="line"><span class="comment"> * With improvements by http://www.variations-of-shadow.com</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">pbkdf2</span><span class="params">($algorithm, $password, $salt, $count, $key_length, $raw_output = false)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    $algorithm = strtolower($algorithm);</span><br><span class="line">    <span class="keyword">if</span>(!in_array($algorithm, hash_algos(), <span class="keyword">true</span>))</span><br><span class="line">        trigger_error(<span class="string">'PBKDF2 ERROR: Invalid hash algorithm.'</span>, E_USER_ERROR);</span><br><span class="line">    <span class="keyword">if</span>($count &lt;= <span class="number">0</span> || $key_length &lt;= <span class="number">0</span>)</span><br><span class="line">        trigger_error(<span class="string">'PBKDF2 ERROR: Invalid parameters.'</span>, E_USER_ERROR);</span><br><span class="line">    <span class="keyword">if</span> (function_exists(<span class="string">"hash_pbkdf2"</span>)) &#123;</span><br><span class="line">        <span class="comment">// The output length is in NIBBLES (4-bits) if $raw_output is false!</span></span><br><span class="line">        <span class="keyword">if</span> (!$raw_output) &#123;</span><br><span class="line">            $key_length = $key_length * <span class="number">2</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> hash_pbkdf2($algorithm, $password, $salt, $count, $key_length, $raw_output);</span><br><span class="line">    &#125;</span><br><span class="line">    $hash_length = strlen(hash($algorithm, <span class="string">""</span>, <span class="keyword">true</span>));</span><br><span class="line">    $block_count = ceil($key_length / $hash_length);</span><br><span class="line">    $output = <span class="string">""</span>;</span><br><span class="line">    <span class="keyword">for</span>($i = <span class="number">1</span>; $i &lt;= $block_count; $i++) &#123;</span><br><span class="line">        <span class="comment">// $i encoded as 4 bytes, big endian.</span></span><br><span class="line">        $last = $salt . pack(<span class="string">"N"</span>, $i);</span><br><span class="line">        <span class="comment">// first iteration</span></span><br><span class="line">        $last = $xorsum = hash_hmac($algorithm, $last, $password, <span class="keyword">true</span>);</span><br><span class="line">        <span class="comment">// perform the other $count - 1 iterations</span></span><br><span class="line">        <span class="keyword">for</span> ($j = <span class="number">1</span>; $j &lt; $count; $j++) &#123;</span><br><span class="line">            $xorsum ^= ($last = hash_hmac($algorithm, $last, $password, <span class="keyword">true</span>));</span><br><span class="line">        &#125;</span><br><span class="line">        $output .= $xorsum;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span>($raw_output)</span><br><span class="line">        <span class="keyword">return</span> substr($output, <span class="number">0</span>, $key_length);</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        <span class="keyword">return</span> bin2hex(substr($output, <span class="number">0</span>, $key_length));</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
-<h2 id="ASP-NET-C-hash-密码源代码"><a href="#ASP-NET-C-hash-密码源代码" class="headerlink" title="ASP.NET(C#) hash 密码源代码"></a>ASP.NET(C#) hash 密码源代码</h2><p>下面的代码是在 ASP.NET 中使用 C# 安全实现 hash 加盐密码。可以从这里下载：<a href="https://crackstation.net/source/password-hashing/PasswordHash.cs" target="_blank" rel="noopener">PasswordHash.cs</a></p>
-<p>如果你需要兼容 PHP 和 C# 的实现，查看<a href="https://crackstation.net/source/password-hashing/PasswordHash.cs" target="_blank" rel="noopener">这里</a>。</p>
-<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">/* </span></span><br><span class="line"><span class="comment"> * Password Hashing With PBKDF2 (http://crackstation.net/hashing-security.htm).</span></span><br><span class="line"><span class="comment"> * Copyright (c) 2013, Taylor Hornby</span></span><br><span class="line"><span class="comment"> * All rights reserved.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * Redistribution and use in source and binary forms, with or without </span></span><br><span class="line"><span class="comment"> * modification, are permitted provided that the following conditions are met:</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * 1. Redistributions of source code must retain the above copyright notice, </span></span><br><span class="line"><span class="comment"> * this list of conditions and the following disclaimer.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * 2. Redistributions in binary form must reproduce the above copyright notice,</span></span><br><span class="line"><span class="comment"> * this list of conditions and the following disclaimer in the documentation </span></span><br><span class="line"><span class="comment"> * and/or other materials provided with the distribution.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" </span></span><br><span class="line"><span class="comment"> * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE </span></span><br><span class="line"><span class="comment"> * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE </span></span><br><span class="line"><span class="comment"> * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE </span></span><br><span class="line"><span class="comment"> * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR </span></span><br><span class="line"><span class="comment"> * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF </span></span><br><span class="line"><span class="comment"> * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS </span></span><br><span class="line"><span class="comment"> * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN </span></span><br><span class="line"><span class="comment"> * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) </span></span><br><span class="line"><span class="comment"> * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE </span></span><br><span class="line"><span class="comment"> * POSSIBILITY OF SUCH DAMAGE.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">using</span> System;</span><br><span class="line"><span class="keyword">using</span> System.Text;</span><br><span class="line"><span class="keyword">using</span> System.Security.Cryptography;</span><br><span class="line"><span class="keyword">namespace</span> <span class="title">PasswordHash</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;summary&gt;</span></span></span><br><span class="line">    <span class="comment"><span class="doctag">///</span> Salted password hashing with PBKDF2-SHA1.</span></span><br><span class="line">    <span class="comment"><span class="doctag">///</span> Author: havoc AT defuse.ca</span></span><br><span class="line">    <span class="comment"><span class="doctag">///</span> www: http://crackstation.net/hashing-security.htm</span></span><br><span class="line">    <span class="comment"><span class="doctag">///</span> Compatibility: .NET 3.0 and later.</span></span><br><span class="line">    <span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;/summary&gt;</span></span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">class</span> <span class="title">PasswordHash</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="comment">// The following constants may be changed without breaking existing hashes.</span></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">const</span> <span class="keyword">int</span> SALT_BYTE_SIZE = <span class="number">24</span>;</span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">const</span> <span class="keyword">int</span> HASH_BYTE_SIZE = <span class="number">24</span>;</span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">const</span> <span class="keyword">int</span> PBKDF2_ITERATIONS = <span class="number">1000</span>;</span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">const</span> <span class="keyword">int</span> ITERATION_INDEX = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">const</span> <span class="keyword">int</span> SALT_INDEX = <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">const</span> <span class="keyword">int</span> PBKDF2_INDEX = <span class="number">2</span>;</span><br><span class="line">        <span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;summary&gt;</span></span></span><br><span class="line">        <span class="comment"><span class="doctag">///</span> Creates a salted PBKDF2 hash of the password.</span></span><br><span class="line">        <span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;/summary&gt;</span></span></span><br><span class="line">        <span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;param name="password"&gt;</span>The password to hash.<span class="doctag">&lt;/param&gt;</span></span></span><br><span class="line">        <span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;returns&gt;</span>The hash of the password.<span class="doctag">&lt;/returns&gt;</span></span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">string</span> <span class="title">CreateHash</span>(<span class="params"><span class="keyword">string</span> password</span>)</span></span><br><span class="line"><span class="function"></span>        &#123;</span><br><span class="line">            <span class="comment">// Generate a random salt</span></span><br><span class="line">            RNGCryptoServiceProvider csprng = <span class="keyword">new</span> RNGCryptoServiceProvider();</span><br><span class="line">            <span class="keyword">byte</span>[] salt = <span class="keyword">new</span> <span class="keyword">byte</span>[SALT_BYTE_SIZE];</span><br><span class="line">            csprng.GetBytes(salt);</span><br><span class="line">            <span class="comment">// Hash the password and encode the parameters</span></span><br><span class="line">            <span class="keyword">byte</span>[] hash = PBKDF2(password, salt, PBKDF2_ITERATIONS, HASH_BYTE_SIZE);</span><br><span class="line">            <span class="keyword">return</span> PBKDF2_ITERATIONS + <span class="string">":"</span> +</span><br><span class="line">                Convert.ToBase64String(salt) + <span class="string">":"</span> +</span><br><span class="line">                Convert.ToBase64String(hash);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;summary&gt;</span></span></span><br><span class="line">        <span class="comment"><span class="doctag">///</span> Validates a password given a hash of the correct one.</span></span><br><span class="line">        <span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;/summary&gt;</span></span></span><br><span class="line">        <span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;param name="password"&gt;</span>The password to check.<span class="doctag">&lt;/param&gt;</span></span></span><br><span class="line">        <span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;param name="correctHash"&gt;</span>A hash of the correct password.<span class="doctag">&lt;/param&gt;</span></span></span><br><span class="line">        <span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;returns&gt;</span>True if the password is correct. False otherwise.<span class="doctag">&lt;/returns&gt;</span></span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">bool</span> <span class="title">ValidatePassword</span>(<span class="params"><span class="keyword">string</span> password, <span class="keyword">string</span> correctHash</span>)</span></span><br><span class="line"><span class="function"></span>        &#123;</span><br><span class="line">            <span class="comment">// Extract the parameters from the hash</span></span><br><span class="line">            <span class="keyword">char</span>[] delimiter = &#123; <span class="string">':'</span> &#125;;</span><br><span class="line">            <span class="keyword">string</span>[] split = correctHash.Split(delimiter);</span><br><span class="line">            <span class="keyword">int</span> iterations = Int32.Parse(split[ITERATION_INDEX]);</span><br><span class="line">            <span class="keyword">byte</span>[] salt = Convert.FromBase64String(split[SALT_INDEX]);</span><br><span class="line">            <span class="keyword">byte</span>[] hash = Convert.FromBase64String(split[PBKDF2_INDEX]);</span><br><span class="line">            <span class="keyword">byte</span>[] testHash = PBKDF2(password, salt, iterations, hash.Length);</span><br><span class="line">            <span class="keyword">return</span> SlowEquals(hash, testHash);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;summary&gt;</span></span></span><br><span class="line">        <span class="comment"><span class="doctag">///</span> Compares two byte arrays in length-constant time. This comparison</span></span><br><span class="line">        <span class="comment"><span class="doctag">///</span> method is used so that password hashes cannot be extracted from</span></span><br><span class="line">        <span class="comment"><span class="doctag">///</span> on-line systems using a timing attack and then attacked off-line.</span></span><br><span class="line">        <span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;/summary&gt;</span></span></span><br><span class="line">        <span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;param name="a"&gt;</span>The first byte array.<span class="doctag">&lt;/param&gt;</span></span></span><br><span class="line">        <span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;param name="b"&gt;</span>The second byte array.<span class="doctag">&lt;/param&gt;</span></span></span><br><span class="line">        <span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;returns&gt;</span>True if both byte arrays are equal. False otherwise.<span class="doctag">&lt;/returns&gt;</span></span></span><br><span class="line">        <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">bool</span> <span class="title">SlowEquals</span>(<span class="params"><span class="keyword">byte</span>[] a, <span class="keyword">byte</span>[] b</span>)</span></span><br><span class="line"><span class="function"></span>        &#123;</span><br><span class="line">            <span class="keyword">uint</span> diff = (<span class="keyword">uint</span>)a.Length ^ (<span class="keyword">uint</span>)b.Length;</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; a.Length &amp;&amp; i &lt; b.Length; i++)</span><br><span class="line">                diff |= (<span class="keyword">uint</span>)(a[i] ^ b[i]);</span><br><span class="line">            <span class="keyword">return</span> diff == <span class="number">0</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;summary&gt;</span></span></span><br><span class="line">        <span class="comment"><span class="doctag">///</span> Computes the PBKDF2-SHA1 hash of a password.</span></span><br><span class="line">        <span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;/summary&gt;</span></span></span><br><span class="line">        <span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;param name="password"&gt;</span>The password to hash.<span class="doctag">&lt;/param&gt;</span></span></span><br><span class="line">        <span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;param name="salt"&gt;</span>The salt.<span class="doctag">&lt;/param&gt;</span></span></span><br><span class="line">        <span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;param name="iterations"&gt;</span>The PBKDF2 iteration count.<span class="doctag">&lt;/param&gt;</span></span></span><br><span class="line">        <span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;param name="outputBytes"&gt;</span>The length of the hash to generate, in bytes.<span class="doctag">&lt;/param&gt;</span></span></span><br><span class="line">        <span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;returns&gt;</span>A hash of the password.<span class="doctag">&lt;/returns&gt;</span></span></span><br><span class="line">        <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">byte</span>[] <span class="title">PBKDF2</span>(<span class="params"><span class="keyword">string</span> password, <span class="keyword">byte</span>[] salt, <span class="keyword">int</span> iterations, <span class="keyword">int</span> outputBytes</span>)</span></span><br><span class="line"><span class="function"></span>        &#123;</span><br><span class="line">            Rfc2898DeriveBytes pbkdf2 = <span class="keyword">new</span> Rfc2898DeriveBytes(password, salt);</span><br><span class="line">            pbkdf2.IterationCount = iterations;</span><br><span class="line">            <span class="keyword">return</span> pbkdf2.GetBytes(outputBytes);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="Ruby-on-Rails-密码-hash-源代码"><a href="#Ruby-on-Rails-密码-hash-源代码" class="headerlink" title="Ruby (on Rails) 密码 hash 源代码"></a>Ruby (on Rails) 密码 hash 源代码</h2><p>下面是 Ruby 中使用加盐 PBKDF2 密码 hash 的实现代码。可以从这里下载：<a href="https://crackstation.net/source/password-hashing/PasswordHash.rb" target="_blank" rel="noopener">PasswordHash.rb</a></p>
-<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment"># Password Hashing With PBKDF2 (http://crackstation.net/hashing-security.htm).</span></span><br><span class="line"><span class="comment"># Copyright (c) 2013, Taylor Hornby</span></span><br><span class="line"><span class="comment"># All rights reserved.</span></span><br><span class="line"><span class="comment"># </span></span><br><span class="line"><span class="comment"># Redistribution and use in source and binary forms, with or without </span></span><br><span class="line"><span class="comment"># modification, are permitted provided that the following conditions are met:</span></span><br><span class="line"><span class="comment"># </span></span><br><span class="line"><span class="comment"># 1. Redistributions of source code must retain the above copyright notice, </span></span><br><span class="line"><span class="comment"># this list of conditions and the following disclaimer.</span></span><br><span class="line"><span class="comment"># </span></span><br><span class="line"><span class="comment"># 2. Redistributions in binary form must reproduce the above copyright notice,</span></span><br><span class="line"><span class="comment"># this list of conditions and the following disclaimer in the documentation </span></span><br><span class="line"><span class="comment"># and/or other materials provided with the distribution.</span></span><br><span class="line"><span class="comment"># </span></span><br><span class="line"><span class="comment"># THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" </span></span><br><span class="line"><span class="comment"># AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE </span></span><br><span class="line"><span class="comment"># IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE </span></span><br><span class="line"><span class="comment"># ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE </span></span><br><span class="line"><span class="comment"># LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR </span></span><br><span class="line"><span class="comment"># CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF </span></span><br><span class="line"><span class="comment"># SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS </span></span><br><span class="line"><span class="comment"># INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN </span></span><br><span class="line"><span class="comment"># CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) </span></span><br><span class="line"><span class="comment"># ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE </span></span><br><span class="line"><span class="comment"># POSSIBILITY OF SUCH DAMAGE.</span></span><br><span class="line"><span class="keyword">require</span> <span class="string">'securerandom'</span></span><br><span class="line"><span class="keyword">require</span> <span class="string">'openssl'</span></span><br><span class="line"><span class="keyword">require</span> <span class="string">'base64'</span></span><br><span class="line"><span class="comment"># Salted password hashing with PBKDF2-SHA1.</span></span><br><span class="line"><span class="comment"># Authors: <span class="doctag">@RedragonX</span> (dicesoft.net), havoc AT defuse.ca </span></span><br><span class="line"><span class="comment"># www: http://crackstation.net/hashing-security.htm</span></span><br><span class="line"><span class="class"><span class="keyword">module</span> <span class="title">PasswordHash</span></span></span><br><span class="line">  <span class="comment"># The following constants can be changed without breaking existing hashes.</span></span><br><span class="line">  PBKDF2_ITERATIONS = <span class="number">1000</span></span><br><span class="line">  SALT_BYTE_SIZE = <span class="number">24</span></span><br><span class="line"> HASH_BYTE_SIZE = <span class="number">24</span></span><br><span class="line">  HASH_SECTIONS = <span class="number">4</span></span><br><span class="line">  SECTION_DELIMITER = <span class="string">':'</span></span><br><span class="line">  ITERATIONS_INDEX = <span class="number">1</span></span><br><span class="line">  SALT_INDEX = <span class="number">2</span></span><br><span class="line">  HASH_INDEX = <span class="number">3</span></span><br><span class="line">  <span class="comment"># Returns a salted PBKDF2 hash of the password.</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">self</span>.<span class="title">createHash</span><span class="params">( password )</span></span></span><br><span class="line">    salt = SecureRandom.base64( SALT_BYTE_SIZE )</span><br><span class="line">    pbkdf2 = OpenSSL::PKCS5::pbkdf2_hmac_sha1(</span><br><span class="line">      password,</span><br><span class="line">      salt,</span><br><span class="line">      PBKDF2_ITERATIONS,</span><br><span class="line">      HASH_BYTE_SIZE</span><br><span class="line">    )</span><br><span class="line">    <span class="keyword">return</span> [<span class="string">"sha1"</span>, PBKDF2_ITERATIONS, salt, Base64.encode64( pbkdf2 )].join( SECTION_DELIMITER )</span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line">  <span class="comment"># Checks if a password is correct given a hash of the correct one.</span></span><br><span class="line">  <span class="comment"># correctHash must be a hash string generated with createHash.</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">self</span>.<span class="title">validatePassword</span><span class="params">( password, correctHash )</span></span></span><br><span class="line">    params = correctHash.split( SECTION_DELIMITER )</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span> <span class="keyword">if</span> params.length != HASH_SECTIONS</span><br><span class="line">    pbkdf2 = Base64.decode64( params[HASH_INDEX] )</span><br><span class="line">    testHash = OpenSSL::PKCS5::pbkdf2_hmac_sha1(</span><br><span class="line">      password,</span><br><span class="line">      params[SALT_INDEX],</span><br><span class="line">      params[ITERATIONS_INDEX].to_i,</span><br><span class="line">      pbkdf2.length</span><br><span class="line">    )</span><br><span class="line">    <span class="keyword">return</span> pbkdf2 == testHash</span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line">  <span class="comment"># Run tests to ensure the module is functioning properly.</span></span><br><span class="line">  <span class="comment"># Returns true if all tests succeed, false if not.</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">self</span>.<span class="title">runSelfTests</span></span></span><br><span class="line">    puts <span class="string">"Sample hashes:"</span></span><br><span class="line">    <span class="number">3</span>.times &#123; puts createHash(<span class="string">"password"</span>) &#125;</span><br><span class="line">    puts <span class="string">"\nRunning self tests..."</span></span><br><span class="line">    @@allPass = <span class="literal">true</span></span><br><span class="line">    correctPassword = <span class="string">'aaaaaaaaaa'</span></span><br><span class="line">    wrongPassword = <span class="string">'aaaaaaaaab'</span></span><br><span class="line">    hash = createHash(correctPassword)</span><br><span class="line">    assert( validatePassword( correctPassword, hash ) == <span class="literal">true</span>, <span class="string">"correct password"</span> )</span><br><span class="line">    assert( validatePassword( wrongPassword, hash ) == <span class="literal">false</span>, <span class="string">"wrong password"</span> )</span><br><span class="line">    h1 = hash.split( SECTION_DELIMITER )</span><br><span class="line">    h2 = createHash( correctPassword ).split( SECTION_DELIMITER )</span><br><span class="line">    assert( h1[HASH_INDEX] != h2[HASH_INDEX], <span class="string">"different hashes"</span> )</span><br><span class="line">    assert( h1[SALT_INDEX] != h2[SALT_INDEX], <span class="string">"different salt"</span> )</span><br><span class="line">    <span class="keyword">if</span> @@allPass</span><br><span class="line">      puts <span class="string">"*** ALL TESTS PASS ***"</span></span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">      puts <span class="string">"*** FAILURES ***"</span></span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line">    <span class="keyword">return</span> @@allPass</span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">self</span>.<span class="title">assert</span><span class="params">( truth, msg )</span></span></span><br><span class="line">    <span class="keyword">if</span> truth</span><br><span class="line">      puts <span class="string">"PASS [<span class="subst">#&#123;msg&#125;</span>]"</span></span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">      puts <span class="string">"FAIL [<span class="subst">#&#123;msg&#125;</span>]"</span></span><br><span class="line">      @@allPass = <span class="literal">false</span></span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line">PasswordHash.runSelfTests</span><br></pre></td></tr></table></figure>
-<p>文章和代码都是 <a href="https://defuse.ca/" target="_blank" rel="noopener">Defuse Security</a> 所著。</p>
-<p>原文： <a href="https://crackstation.net/hashing-security.htm" target="_blank" rel="noopener">Salted Password Hashing - Doing it Right</a><br>转自：<a href="http://blog.sibo.me/2014/05/14/hashing-security.html" target="_blank" rel="noopener">正确使用密码加盐散列[译]</a></p>
+            <p>
+              集群两大关键特性集群指的是一组服务实体，它们共同工作以提供比单个服务实体更具可扩展性和可用性的服务平台。
+在客户端看来，一个集群就像一个服务实体，但事实上，一个集群是由一组服务实体构成但。与单个服务实体相比，集群具有两大关键特性：
+
+可扩展性：集群的性能不受单个服务实体的限制，可以通过动态添加新的服
+              ...
+            </p>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2018/05/07/the-difference-between-cluster-and-distributed/#more" rel="contents">
+                Read more &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://fullgc.dev/2018/02/18/distributed-consistency/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Hans">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/uploads/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Full GC">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2018/02/18/distributed-consistency/" class="post-title-link" itemprop="url">分布式一致性协议</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2018-02-18 17:47:00" itemprop="dateCreated datePublished" datetime="2018-02-18T17:47:00+08:00">2018-02-18</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2019-03-27 21:51:03" itemprop="dateModified" datetime="2019-03-27T21:51:03+08:00">2019-03-27</time>
+              
+            
+          </span>
 
           
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>在传统的软件系统中，如果想要保证一次业务请求中的多次修改操作结果具有一致性，可以使用事务（Transaction）来控制操作整体的提交（Commit）或回滚（Rollback）。事务为业务操作提供了强一致性保证，其特性可总结为ACID，即：</p>
+<ul>
+<li>原子性(Atomicity)：一个事务（transaction）中的所有操作，或者全部完成，或者全部不完成，不会结束在中间某个环节；</li>
+<li>一致性(Consistency)：在事务开始之前和事务结束以后，数据库的完整性没有被破坏；</li>
+<li>隔离型(Isolation)：数据库允许多个并发事务同时对其数据进行读写和修改的能力，隔离性可以防止多个事务并发执行时由于交叉执行而导致数据的不一致；</li>
+<li>持久性(Durability)：事务处理结束后，对数据的修改就是永久的，即便系统故障也不会丢失。</li>
+</ul>
+<p>互联网时代，分布式系统的应用越来越普遍，在动辄几百上千的研发团队中，软件系统如果仍然采用单一应用的开发模式，团队的协作成本是非常高的，因此服务化和微服务成为了目前行业的主流。然而，分布式系统带来低耦合，高可扩展性的同时，单个业务可能包含多个应用调用，无法使用传统的事务来为所有应用提供一致性保证。此时，有人提出并证明了CAP定理，即对于一个分布式计算系统来说，不可能同时满足以下三点：</p>
+<ul>
+<li>一致性(Consistency)：即更新操作成功并返回客户端完成后，所有节点在同一时间的数据完全一致；</li>
+<li>可用性(Availability)：即服务一直可用，而且是正常响应时间；</li>
+<li>分区容错性(Partition tolerance)：分布式系统在遇到某节点或网络分区故障的时候，仍然能够对外提供满足一致性和可用性的服务。</li>
+</ul>
+<p>由于无法同时满足CAP三个特性，有人又提出了BASE理论，即：</p>
+<ul>
+<li>基本可用(Basically Available)：基本可用是指分布式系统在出现故障的时候，允许损失部分可用性，即保证核心可用；</li>
+<li>软状态(Soft State)：软状态是指允许系统存在中间状态，而该中间状态不会影响系统整体可用性；</li>
+<li>最终一致性(Eventual Consistency)：最终一致性是指系统中的所有数据副本经过一定时间后，最终能够达到一致的状态。</li>
+</ul>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2018/02/18/distributed-consistency/#more" rel="contents">
+                Read more &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://fullgc.dev/2017/11/10/double-checked-locking-is-broken/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Hans">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/uploads/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Full GC">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2017/11/10/double-checked-locking-is-broken/" class="post-title-link" itemprop="url">“双重校验锁不可靠”声明</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2017-11-10 16:27:00" itemprop="dateCreated datePublished" datetime="2017-11-10T16:27:00+08:00">2017-11-10</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2019-03-27 21:50:58" itemprop="dateModified" datetime="2019-03-27T21:50:58+08:00">2019-03-27</time>
+              
+            
+          </span>
+
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <p>双重校验锁被广泛用作一种多线程环境中高效的懒加载实现。然而，当在Java中被以平台无关的形式实现时，在没有额外的同步措施的情况下，它将是不可靠的。当它在其他语言如C++中被实现时，它的可靠与否取决于处理器的内存模型，编译器进行的指令重排序以及编译器与同步库的交互。由于以上几点都未在语言规范中被明确定义（如C++），我们无法确定双重校验锁在什么情况下有效。在C++中，可以使用显式的内存屏障来使双重校验锁正确工作，但是这些屏障在Java中并不可用。</p>
+<p>为了解释我们想要的行为，思考以下代码：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Single threaded version</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Foo</span> </span>&#123; </span><br><span class="line">    <span class="keyword">private</span> Helper helper = <span class="keyword">null</span>;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> Helper <span class="title">getHelper</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (helper == <span class="keyword">null</span>) </span><br><span class="line">            helper = <span class="keyword">new</span> Helper();</span><br><span class="line">        <span class="keyword">return</span> helper;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// other functions and members...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>若以上代码被使用在多线程环境中，将会引发很多问题。最常见的是创建了两个或更多的Helper对象（后面会提出其他问题）。要解决这个问题，我们可以简单地给<code>getHelper()</code>方法加上同步：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Correct multithreaded version</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Foo</span> </span>&#123; </span><br><span class="line">    <span class="keyword">private</span> Helper helper = <span class="keyword">null</span>;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> Helper <span class="title">getHelper</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (helper == <span class="keyword">null</span>) </span><br><span class="line">            helper = <span class="keyword">new</span> Helper();</span><br><span class="line">        <span class="keyword">return</span> helper;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// other functions and members...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2017/11/10/double-checked-locking-is-broken/#more" rel="contents">
+                Read more &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://fullgc.dev/2017/10/04/learning-jvm-9/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Hans">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/uploads/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Full GC">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2017/10/04/learning-jvm-9/" class="post-title-link" itemprop="url">深入理解Java虚拟机学习笔记（九）</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2017-10-04 10:00:00" itemprop="dateCreated datePublished" datetime="2017-10-04T10:00:00+08:00">2017-10-04</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2019-03-27 21:50:50" itemprop="dateModified" datetime="2019-03-27T21:50:50+08:00">2019-03-27</time>
+              
+            
+          </span>
+
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h2 id="线程安全与锁优化"><a href="#线程安全与锁优化" class="headerlink" title="线程安全与锁优化"></a>线程安全与锁优化</h2><h3 id="线程安全"><a href="#线程安全" class="headerlink" title="线程安全"></a>线程安全</h3><h4 id="线程安全的定义"><a href="#线程安全的定义" class="headerlink" title="线程安全的定义"></a>线程安全的定义</h4><p>当多个线程访问一个对象时，如果不用考虑这些线程在运行时环境下的调度和交替执行，也不需要进行额外的同步，或者在调用方进行任何其他的协调操作，调用这个对象的行为都可以获得正确的结果，那这个对象是线程安全的。</p>
+<h4 id="Java语言中的线程安全"><a href="#Java语言中的线程安全" class="headerlink" title="Java语言中的线程安全"></a>Java语言中的线程安全</h4><ul>
+<li>不可变：不可变的对象只要被正确构建出来（没有发生this引用逃逸的情况），那其外部的可见状态永远不会改变。例如：String，java.lang.Integer等。</li>
+<li>绝对线程安全：完全满足线程安全的定义。<strong>注意：Java API中大多数标注自己是线程安全的类，都不是绝对线程安全的！</strong></li>
+<li>相对线程安全：保证对于对象单独的操作是线程安全的，但是对于一些特定顺序的连续调用，需要在调用端使用同步手段来保证调用的正确性。例如同时对一个Vector进行remove()，get()和size()操作，在使用get()时，之前在size()范围内的序号可能已经失效了。<strong>Java中大部分线程安全类都属于这种类型。</strong></li>
+<li>线程兼容：对象本身不是线程安全的，但是可以通过在调用端正确地使用同步手段来保证对象在并发环境中可以安全地使用。</li>
+<li>线程队里：无论是否采取了同步手段，都无法在多线程环境中并发使用的代码。如Thread.suspend()和Thread.resume()等。</li>
+</ul>
+<h4 id="线程安全的实现方法"><a href="#线程安全的实现方法" class="headerlink" title="线程安全的实现方法"></a>线程安全的实现方法</h4><ol>
+<li>互斥同步（悲观锁）：只有一个线程能持有锁，其他线程在其释放锁之前只能挂起。如synchronized关键字和ReentrantLock。</li>
+<li>非阻塞同步（乐观锁）：不加锁，基于冲突检测的并发策略，假设操作没有冲突，如果有冲突就重试，直到成功为止。典型的方法是CAS操作，Java中JUC包中的原子数字类就是使用了CAS操作。</li>
+<li>无同步方案：天生线程安全。<ul>
+<li>可重入代码：可以在代码执行的任意时刻中断它，在控制权返回后，原来的程序不会出现任何错误。</li>
+<li>线程本地存储：将共享数据的代码限制在同一线程中执行。<blockquote>
+<p>同步：指在多个线程并发访问共享数据时，保证共享数据在同一时刻只被一个线程使用。</p>
+</blockquote>
+</li>
+</ul>
+</li>
+</ol>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2017/10/04/learning-jvm-9/#more" rel="contents">
+                Read more &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://fullgc.dev/2017/10/04/learning-jvm-7/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Hans">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/uploads/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Full GC">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2017/10/04/learning-jvm-7/" class="post-title-link" itemprop="url">深入理解Java虚拟机学习笔记（七）</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2017-10-04 10:00:00" itemprop="dateCreated datePublished" datetime="2017-10-04T10:00:00+08:00">2017-10-04</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2019-03-27 21:50:40" itemprop="dateModified" datetime="2019-03-27T21:50:40+08:00">2019-03-27</time>
+              
+            
+          </span>
+
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h2 id="程序编译与代码优化"><a href="#程序编译与代码优化" class="headerlink" title="程序编译与代码优化"></a>程序编译与代码优化</h2><h3 id="解释器与编译器"><a href="#解释器与编译器" class="headerlink" title="解释器与编译器"></a>解释器与编译器</h3><ul>
+<li>解释器：对代码（字节码）解释执行，执行效率较低但可以省去编译的时间，快速启动程序。</li>
+<li>编译器：将代码编译成本地代码后执行，执行效率高，但需要花费时间在编译上。</li>
+</ul>
+<h3 id="Hotspot-VM内的解释器与编译器"><a href="#Hotspot-VM内的解释器与编译器" class="headerlink" title="Hotspot VM内的解释器与编译器"></a>Hotspot VM内的解释器与编译器</h3><ol>
+<li>解释器（Interpreter）</li>
+<li>C1即时编译器（Client JIT Compiler）</li>
+<li>C2即时编译器（Server JIT Compiler）</li>
+</ol>
+<h3 id="分层编译"><a href="#分层编译" class="headerlink" title="分层编译"></a>分层编译</h3><ul>
+<li>第0层：程序解释执行，解释器不开启性能监控功能，可触发第1层编译。</li>
+<li>第1层：也称为C1编译，将字节码编译为本地代码，进行简单、可靠的优化，如有必要将加入性能监控的逻辑。</li>
+<li>第2层：也称为C2编译，也是将字节码编译为本地代码，但是会启用一些耗时较长的优化，甚至会根据性能监控信息进行一些不可靠的激进优化。</li>
+</ul>
+<h3 id="热点探测"><a href="#热点探测" class="headerlink" title="热点探测"></a>热点探测</h3><h4 id="热点代码"><a href="#热点代码" class="headerlink" title="热点代码"></a>热点代码</h4><ul>
+<li>被多次调用的方法</li>
+<li>被多次执行的循环体</li>
+</ul>
+<h4 id="热点探测方式"><a href="#热点探测方式" class="headerlink" title="热点探测方式"></a>热点探测方式</h4><ul>
+<li>基于采样的热点探测：定期检查各线程的栈顶，统计出现在栈顶的方法，出现次数较多的认为是热点方法。<strong>优点：实现简单，高效，容易获取方法调用关系。缺点：难以精确统计方法的热度，易受线程阻塞或外界因素影响。</strong></li>
+<li>基于计数器的热点探测：为方法或代码块建立计数器，统计方法执行的次数，执行次数超过一定阈值则认为是热点方法。<strong>优点：统计结果精确严谨。缺点：实现复杂，难以获取方法的调用关系。</strong></li>
+</ul>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2017/10/04/learning-jvm-7/#more" rel="contents">
+                Read more &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://fullgc.dev/2017/10/04/learning-jvm-8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Hans">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/uploads/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Full GC">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2017/10/04/learning-jvm-8/" class="post-title-link" itemprop="url">深入理解Java虚拟机学习笔记（八）</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2017-10-04 10:00:00" itemprop="dateCreated datePublished" datetime="2017-10-04T10:00:00+08:00">2017-10-04</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2019-03-27 21:43:29" itemprop="dateModified" datetime="2019-03-27T21:43:29+08:00">2019-03-27</time>
+              
+            
+          </span>
+
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h2 id="Java内存模型与线程"><a href="#Java内存模型与线程" class="headerlink" title="Java内存模型与线程"></a>Java内存模型与线程</h2><h3 id="Java内存模型"><a href="#Java内存模型" class="headerlink" title="Java内存模型"></a>Java内存模型</h3><h4 id="主内存与工作内存"><a href="#主内存与工作内存" class="headerlink" title="主内存与工作内存"></a>主内存与工作内存</h4><ul>
+<li>主内存：主要包括方法区和堆。</li>
+<li>工作内存：每个线程拥有一个工作内存，主要包括属于该线程私有的栈和对主内存部分变量拷贝的寄存器。</li>
+</ul>
+<p><strong>注意</strong></p>
+<ol>
+<li>所有的变量都存储在主内存中，主内存对所有线程共享。</li>
+<li>线程对变量的所有操作必须在工作内存中进行，不能直接读写主内存中的变量。</li>
+<li>不同线程之间也无法直接访问对方的工作内存，线程间变量值的传递均需要通过主内存来完成。</li>
+</ol>
+<h4 id="内存间交互操作"><a href="#内存间交互操作" class="headerlink" title="内存间交互操作"></a>内存间交互操作</h4><ul>
+<li>lock（锁定）：作用于主内存的变量，它把一个变量标识为一条线程独占的状态。</li>
+<li>unlock（解锁）：作用于主内存的变量，它把一个处于锁定状态的变量释放出来，释放后的变量才可以被其他线程锁定。</li>
+<li>read（读取）：作用于主内存的变量，它把一个变量的值从主内存传输到线程的工作内存中，以便随后的load动作使用。</li>
+<li>load（载入）：作用于工作内存的变量，它把read操作从主内存中得到的变量值放入工作内存的变量副本中。</li>
+<li>use（使用）：作用于工作内存的变量，它把工作内存中一个变量的值传递给执行引擎，每当虚拟机遇到一个需要使用到变量的值的字节码指令时将会执行这个操作。</li>
+<li>assign（赋值）：作用于工作内存的变量，它把一个从执行引擎接收到的值赋给工作内存的变量，每当虚拟机遇到一个给变量赋值的字节码指令每当虚拟机遇到一个给变量赋值的字节码指令时执行这个操作。</li>
+<li>store（存储）：作用于工作内存的变量，它把工作内存中一个变量的值传送到主内存中，以便随后的write操作使用。</li>
+<li>write（写入）：作用于主内存的变量，它把store操作从工作内存中得到的变量的值放入主内存的变量中。</li>
+</ul>
+<p>以上8种操作都是原子的，不可再分的，且执行上述基本操作时必须满足下列规则：</p>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2017/10/04/learning-jvm-8/#more" rel="contents">
+                Read more &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://fullgc.dev/2017/10/01/learning-jvm-6/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Hans">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/uploads/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Full GC">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2017/10/01/learning-jvm-6/" class="post-title-link" itemprop="url">深入理解Java虚拟机学习笔记（六）</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2017-10-01 10:00:00" itemprop="dateCreated datePublished" datetime="2017-10-01T10:00:00+08:00">2017-10-01</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2019-03-27 21:50:34" itemprop="dateModified" datetime="2019-03-27T21:50:34+08:00">2019-03-27</time>
+              
+            
+          </span>
+
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h2 id="虚拟机字节码执行引擎"><a href="#虚拟机字节码执行引擎" class="headerlink" title="虚拟机字节码执行引擎"></a>虚拟机字节码执行引擎</h2><h3 id="栈帧"><a href="#栈帧" class="headerlink" title="栈帧"></a>栈帧</h3><h4 id="栈帧结构"><a href="#栈帧结构" class="headerlink" title="栈帧结构"></a>栈帧结构</h4><ol>
+<li>局部变量表</li>
+<li>操作数栈</li>
+<li>动态连接</li>
+<li>方法返回地址</li>
+<li>附加信息</li>
+</ol>
+<h4 id="局部变量表"><a href="#局部变量表" class="headerlink" title="局部变量表"></a>局部变量表</h4><ol>
+<li>变量槽（Slot）：每个变量槽应该能存放一个<code>boolean</code>, <code>byte</code>, <code>char</code>, <code>short</code>, <code>int</code>, <code>float</code>, <code>reference</code>或<code>returnAddress</code>类型的数据，Slot的实际长度可以随着处理器，操作系统或虚拟机的不同而变化。对于64位数据类型，<code>long</code>和<code>double</code>，存储时将以高位对齐的方式占用两个连续的变量槽。</li>
+<li>索引定位：虚拟机通过索引定位的方式使用局部变量表，索引值的范围是从0开始至局部变量表最大的Slot数量。</li>
+<li>参数传递：虚拟机通过使用局部变量表完成参数值到参数变量列表的传递过程，当执行实例方法时，第0位变量槽默认用于传递方法所属对象实例的引用，即”this”。</li>
+<li>局部变量：参数列表分配完毕后，根据方法体内部定义变量的顺序和作用域分配变量槽。</li>
+<li>变量槽的复用：当代码执行离开了局部变量A的作用域之后，如果有新的局部变量被定义，那么A使用的变量槽就可以被新的局部变量复用。</li>
+<li>局部变量的初始化：局部变量未经初始化不能被使用，局部变量不会被自动赋予零值。</li>
+</ol>
+<h4 id="操作数栈"><a href="#操作数栈" class="headerlink" title="操作数栈"></a>操作数栈</h4><ol>
+<li>栈元素：32位数据类型元素占用一个容量，64位数据类型元素占用两个容量。</li>
+<li>作用：供字节码指令执行的时候，写入和提取内容使用。</li>
+</ol>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2017/10/01/learning-jvm-6/#more" rel="contents">
+                Read more &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://fullgc.dev/2017/09/20/learning-jvm-5/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Hans">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/uploads/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Full GC">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2017/09/20/learning-jvm-5/" class="post-title-link" itemprop="url">深入理解Java虚拟机学习笔记（五）</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2017-09-20 10:00:00" itemprop="dateCreated datePublished" datetime="2017-09-20T10:00:00+08:00">2017-09-20</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2019-03-27 21:50:30" itemprop="dateModified" datetime="2019-03-27T21:50:30+08:00">2019-03-27</time>
+              
+            
+          </span>
+
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h2 id="虚拟机类加载机制"><a href="#虚拟机类加载机制" class="headerlink" title="虚拟机类加载机制"></a>虚拟机类加载机制</h2><h3 id="类的生命周期"><a href="#类的生命周期" class="headerlink" title="类的生命周期"></a>类的生命周期</h3><ul>
+<li>加载</li>
+<li>验证</li>
+<li>准备</li>
+<li>解析</li>
+<li>初始化</li>
+<li>使用</li>
+<li>卸载</li>
+</ul>
+<blockquote>
+<p>验证，准备，解析三个部分统称为连接。</p>
+</blockquote>
+<h3 id="类加载的过程"><a href="#类加载的过程" class="headerlink" title="类加载的过程"></a>类加载的过程</h3><h4 id="加载"><a href="#加载" class="headerlink" title="加载"></a>加载</h4><ol>
+<li>通过一个类的全限定名来获取定义此类的二进制字节流。</li>
+<li>将这个字节流所代表的静态存储结构转化为方法区的运行时数据结构。</li>
+<li>在内存中生存一个代表这个类的<code>java.lang.Class</code>对象，作为方法区这个类的各种数据的访问入口。</li>
+</ol>
+<h4 id="验证"><a href="#验证" class="headerlink" title="验证"></a>验证</h4><ol>
+<li>文件格式验证</li>
+<li>元数据验证</li>
+<li>字节码验证</li>
+<li>符号引用验证</li>
+</ol>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2017/09/20/learning-jvm-5/#more" rel="contents">
+                Read more &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://fullgc.dev/2017/09/18/learning-jvm-4/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Hans">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/uploads/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Full GC">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2017/09/18/learning-jvm-4/" class="post-title-link" itemprop="url">深入理解Java虚拟机学习笔记（四）</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2017-09-18 10:00:00" itemprop="dateCreated datePublished" datetime="2017-09-18T10:00:00+08:00">2017-09-18</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2019-03-27 21:50:25" itemprop="dateModified" datetime="2019-03-27T21:50:25+08:00">2019-03-27</time>
+              
+            
+          </span>
+
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h2 id="类文件结构"><a href="#类文件结构" class="headerlink" title="类文件结构"></a>类文件结构</h2><h3 id="Class-类文件的结构"><a href="#Class-类文件的结构" class="headerlink" title="Class 类文件的结构"></a>Class 类文件的结构</h3><ol>
+<li>魔数和Class文件的版本</li>
+<li>常量池</li>
+<li>访问标志</li>
+<li>类索引，父类索引与接口索引集合</li>
+<li>字段表集合</li>
+<li>方法表集合</li>
+<li>属性表集合</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">类型</th>
+<th style="text-align:left">名称</th>
+<th style="text-align:right">数量</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">u4</td>
+<td style="text-align:left">magic</td>
+<td style="text-align:right">1</td>
+</tr>
+<tr>
+<td style="text-align:left">u2</td>
+<td style="text-align:left">minor_version</td>
+<td style="text-align:right">1</td>
+</tr>
+<tr>
+<td style="text-align:left">u2</td>
+<td style="text-align:left">major_version</td>
+<td style="text-align:right">1</td>
+</tr>
+<tr>
+<td style="text-align:left">u2</td>
+<td style="text-align:left">constant_pool_count</td>
+<td style="text-align:right">1</td>
+</tr>
+<tr>
+<td style="text-align:left">cp_info</td>
+<td style="text-align:left">constant_pool</td>
+<td style="text-align:right">constant_pool_count-1</td>
+</tr>
+<tr>
+<td style="text-align:left">u2</td>
+<td style="text-align:left">access_flags</td>
+<td style="text-align:right">1</td>
+</tr>
+<tr>
+<td style="text-align:left">u2</td>
+<td style="text-align:left">this_class</td>
+<td style="text-align:right">1</td>
+</tr>
+<tr>
+<td style="text-align:left">u2</td>
+<td style="text-align:left">super_class</td>
+<td style="text-align:right">1</td>
+</tr>
+<tr>
+<td style="text-align:left">u2</td>
+<td style="text-align:left">interfaces_count</td>
+<td style="text-align:right">1</td>
+</tr>
+<tr>
+<td style="text-align:left">u2</td>
+<td style="text-align:left">interfaces</td>
+<td style="text-align:right">interfaces_count</td>
+</tr>
+<tr>
+<td style="text-align:left">u2</td>
+<td style="text-align:left">fields_count</td>
+<td style="text-align:right">1</td>
+</tr>
+<tr>
+<td style="text-align:left">field_info</td>
+<td style="text-align:left">fileds</td>
+<td style="text-align:right">fields_count</td>
+</tr>
+<tr>
+<td style="text-align:left">u2</td>
+<td style="text-align:left">methods_count</td>
+<td style="text-align:right">1</td>
+</tr>
+<tr>
+<td style="text-align:left">method_info</td>
+<td style="text-align:left">methods</td>
+<td style="text-align:right">methods_count</td>
+</tr>
+<tr>
+<td style="text-align:left">u2</td>
+<td style="text-align:left">attributes_count</td>
+<td style="text-align:right">1</td>
+</tr>
+<tr>
+<td style="text-align:left">attribute_info</td>
+<td style="text-align:left">attributes</td>
+<td style="text-align:right">attributes_count</td>
+</tr>
+</tbody>
+</table>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2017/09/18/learning-jvm-4/#more" rel="contents">
+                Read more &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
         
       
     </div>
@@ -743,6 +2107,10 @@
   </section>
 
   
+  <nav class="pagination">
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right" aria-label="Next page"></i></a>
+  </nav>
+
 
 
           </div>
@@ -784,7 +2152,7 @@
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">2</span>
+                    <span class="site-state-item-count">14</span>
                     <span class="site-state-item-name">posts</span>
                   </a>
                 </div>
@@ -792,6 +2160,23 @@
 
               
 
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">3</span>
+                    <span class="site-state-item-name">tags</span>
+                  
+                </div>
               
             </nav>
           

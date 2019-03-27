@@ -1,0 +1,1277 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="keywords" content="java,csharp,c,c++,program,php">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Full GC">
+<meta property="og:url" content="https://fullgc.dev/page/2/index.html">
+<meta property="og:site_name" content="Full GC">
+<meta property="og:locale" content="zh-Hans">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Full GC">
+
+
+
+
+
+
+  <link rel="canonical" href="https://fullgc.dev/page/2/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Full GC</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left 
+  page-home">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Full GC</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">Stop the world, clean your mind.</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+  <section id="posts" class="posts-expand">
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://fullgc.dev/2017/09/17/learning-jvm-3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Hans">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/uploads/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Full GC">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2017/09/17/learning-jvm-3/" class="post-title-link" itemprop="url">深入理解Java虚拟机学习笔记（三）</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2017-09-17 10:00:00" itemprop="dateCreated datePublished" datetime="2017-09-17T10:00:00+08:00">2017-09-17</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2019-03-27 21:50:17" itemprop="dateModified" datetime="2019-03-27T21:50:17+08:00">2019-03-27</time>
+              
+            
+          </span>
+
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h3 id="Hotspot-VM的实现"><a href="#Hotspot-VM的实现" class="headerlink" title="Hotspot VM的实现"></a>Hotspot VM的实现</h3><ol>
+<li>OopMap：在类加载完成后记录下对象内的数据类型与偏移量，在JIT编译过程中记录下栈和寄存器中哪些位置是引用。</li>
+<li>安全点：在指令序列复用时，如方法调用，循环跳转，异常跳转等。</li>
+<li>中断：<ul>
+<li>抢先式中断：不需要线程代码配合，当GC发生时，先把所有线程都中断，如果发现线程中断的点不在安全点上，则恢复线程，让他跑到安全点上。</li>
+<li>主动式中断：当GC需要中断线程的时候，在安全点上设置中断标志，线程执行时主动轮询中断标志，发现标志为真时则主动中断挂起线程。</li>
+</ul>
+</li>
+<li>安全区域：指线程在某一段代码片段中，引用关系不会发生变化，在这个区域中的任意点开始GC都是安全的。在线程处于blocked或sleep状态无法跑到安全点时，采用安全区域可以避免GC长时间等待。</li>
+</ol>
+<h3 id="垃圾收集器"><a href="#垃圾收集器" class="headerlink" title="垃圾收集器"></a>垃圾收集器</h3><ol>
+<li>Serial收集器：单线程，进行垃圾收集时必须暂停所有工作线程。Client模式下默认新生代收集器。采用复制算法。优点：简单高效，进行垃圾收集时不需要与工作线程交互。缺点：必须暂停所有工作线程，停顿时间较长。</li>
+<li>Serial Old收集器：Serial收集器的老年代版本。主要也是在Client模式下使用，在Server模式下，主要与Parallel Scavenge收集器搭配使用，或作为CMS收集器的后备预案。采用标记-整理算法。</li>
+<li>ParNew收集器：Serial收集器的多线程版本，除了能够多线程进行垃圾收集以外，其他与Serial收集器相似，进行垃圾收集时必须暂停所有工作线程。Server模式下默认新生代收集器。采用复制算法。在CPU核心数量较多的时候垃圾收集效率较高，但在CPU核心数量较少的时候效率不一定比Serial收集器高。</li>
+<li>Parallel Scavenge收集器：与ParNew类似，也是多线程收集器，但更关注于达到一个可控制的吞吐量（用于执行用户代码的CPU时间与CPU总消耗时间的比值）。采用复制算法。</li>
+<li>Parallel Old收集器：Parallel Scavenge的老年代版本。采用标记-整理算法。</li>
+<li>CMS收集器：并发收集器，追求最短回收停顿时间，适合追求服务响应速度的服务端应用。采用标记-清除算法。优点：收集过程中耗时最长的步骤都可以和用户工作线程并发工作。缺点：对CPU资源非常敏感，在CPU核心数较少的情况下，对应用的运行速度有较大影响；无法处理浮动垃圾，即在垃圾收集过程中总有新的垃圾不断产生，只能积累到下一次GC再收集；标记-清除算法容易导致产生大量内存碎片，从而提前触发Full GC。</li>
+<li>G1收集器：并行与并发；分代收集；空间整合；可预测的停顿。使用Region划分GC堆。</li>
+</ol>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2017/09/17/learning-jvm-3/#more" rel="contents">
+                Read more &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://fullgc.dev/2017/09/16/learning-jvm-2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Hans">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/uploads/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Full GC">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2017/09/16/learning-jvm-2/" class="post-title-link" itemprop="url">深入理解Java虚拟机学习笔记（二）</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2017-09-16 10:00:00" itemprop="dateCreated datePublished" datetime="2017-09-16T10:00:00+08:00">2017-09-16</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2019-03-27 21:50:09" itemprop="dateModified" datetime="2019-03-27T21:50:09+08:00">2019-03-27</time>
+              
+            
+          </span>
+
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h2 id="垃圾收集器与内存分配策略"><a href="#垃圾收集器与内存分配策略" class="headerlink" title="垃圾收集器与内存分配策略"></a>垃圾收集器与内存分配策略</h2><h3 id="对象的生存与死亡"><a href="#对象的生存与死亡" class="headerlink" title="对象的生存与死亡"></a>对象的生存与死亡</h3><h4 id="引用计数与可达性分析算法"><a href="#引用计数与可达性分析算法" class="headerlink" title="引用计数与可达性分析算法"></a>引用计数与可达性分析算法</h4><ol>
+<li>引用计数：当对象被引用时，计数器+1；当引用失效时，计数器-1。效率高，但无法解决循环引用的问题。</li>
+<li>可达性分析：以GC Root为起始点，向下搜索，搜索走过的路径称为引用链，当从GC Root到对象不可达时，该对象为孤立对象，即可回收。<ul>
+<li>GC Root: <ul>
+<li>虚拟机栈（栈帧中的局部变量表）中引用的对象</li>
+<li>方法区中类静态属性引用的对象</li>
+<li>方法区中常量引用的对象</li>
+<li>本地方法栈中JNI引用的对象</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+<h4 id="引用强度"><a href="#引用强度" class="headerlink" title="引用强度"></a>引用强度</h4><ol>
+<li>强引用：程序代码中普遍存在的，如使用new操作符产生的引用。只要强引用还存在，系统将不会回收被强引用的对象。</li>
+<li>软引用：SoftReference类实现，用来描述一些还有用但是并非必需的对象。当系统将要发生内存溢出时，软引用对象将被列入可回收的范围内并进行二次回收，若回收后仍然没有足够的内存，系统才会抛出内存溢出异常。</li>
+<li>弱引用：WeakReference类实现，用来描述非必需对象。无论内存是否足够，弱引用对象都只能生存到发生下一次垃圾收集之前。</li>
+<li>虚引用：PhantomReference类实现，仅用于在对象被回收时得到通知。虚引用完全不影响对象的生存时间，也无法通过虚引用来获取一个对象实例。</li>
+</ol>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2017/09/16/learning-jvm-2/#more" rel="contents">
+                Read more &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://fullgc.dev/2017/09/14/learning-jvm-1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Hans">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/uploads/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Full GC">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2017/09/14/learning-jvm-1/" class="post-title-link" itemprop="url">深入理解Java虚拟机学习笔记（一）</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2017-09-14 10:00:00" itemprop="dateCreated datePublished" datetime="2017-09-14T10:00:00+08:00">2017-09-14</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2019-03-27 21:50:04" itemprop="dateModified" datetime="2019-03-27T21:50:04+08:00">2019-03-27</time>
+              
+            
+          </span>
+
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h2 id="内存区域与内存溢出异常"><a href="#内存区域与内存溢出异常" class="headerlink" title="内存区域与内存溢出异常"></a>内存区域与内存溢出异常</h2><h3 id="运行时数据区域"><a href="#运行时数据区域" class="headerlink" title="运行时数据区域"></a>运行时数据区域</h3><ol>
+<li>程序计数器：线程私有，负责指令跳转，执行Java方法时记录虚拟机字节码指令地址，执行Native方法时为空。</li>
+<li>虚拟机栈：线程私有，存储栈帧。<ul>
+<li>栈帧：方法运行时的基础数据结构，方法执行时创建，用于存储局部变量表，操作数栈，动态链接，方法出口等信息。</li>
+<li>局部变量表：由若干个局部变量空间（Slot）组成，存放编译器可知的基本数据类型，对象的引用和返回地址类型，其中64位整数long和浮点数double的数据会占用2个空间（Slot），其余数据类型只占用一个。局部变量表的内存空间是在编译时完成分配的，在方法运行期间不会发生改变。</li>
+</ul>
+</li>
+<li>本地方法栈：规范中无强制规定，在Hotspot VM中与虚拟机栈合二为一。</li>
+<li>堆：线程共享，虚拟机启动时创建，存放对象实例。也叫GC堆。</li>
+<li>方法区：线程共享，存放虚拟机加载的类，常量，静态变量，JIT编译后的代码等数据。</li>
+<li>运行时常量池：方法区的一部分，存放编译期生成的各种字面量和符号引用。</li>
+<li>直接内存：<strong>不属于</strong>运行时数据区域，通过NIO类通过Native函数库直接分配堆外内存。</li>
+</ol>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2017/09/14/learning-jvm-1/#more" rel="contents">
+                Read more &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://fullgc.dev/2016/01/31/salted-password-hashing-do-it-right/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Hans">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/uploads/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Full GC">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2016/01/31/salted-password-hashing-do-it-right/" class="post-title-link" itemprop="url">【译】正确使用密码加盐散列</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2016-01-31 10:05:04" itemprop="dateCreated datePublished" datetime="2016-01-31T10:05:04+08:00">2016-01-31</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2019-03-27 21:49:58" itemprop="dateModified" datetime="2019-03-27T21:49:58+08:00">2019-03-27</time>
+              
+            
+          </span>
+
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <p>如果你是一个 web 开发工程师，可能你已经建立了一个用户账户系统。一个用户账户系统最重要的部分是如何保护密码。用户账户数据库经常被黑，如果你的网站曾经被攻击过，你绝对必须做点什么来保护你的用户的密码。最好的用来保护密码的方式是采用加盐密码散列 (salted password hasing)。 本文将解释为什么要这样做。</p>
+<p>互联网上充斥着大量的误导信息，有许许多多的关于如何正确做密码散列的矛盾的观点，有些甚至是误解。密码散列是一个简单的事情，但是仍然有很多人做错了。在这篇文章中，我不仅将解释正确实现的方式，而且告诉你为什么这样做。</p>
+<p>重要提示：如果你正在试图自己编码实现密码散列，请停下来！它太容易搞糟了。不，不，不，你在大学上的密码学课程不能让你避免这个警告。这个警告适用于每个人：不要实现自己的加密！如何保存密码的问题已经被解决了。使用 phpass 或者本文后面提供的代码。</p>
+<p>如果因为什么原因你没有阅读上面的警告，请现在立即去读一遍。真的，本文不是教你如何实现自己的密码存储系统，而是解释为什么密码应该这样存储。</p>
+<p>本文后面有基于 BSD 授权协议的密码散列源代码：</p>
+<ul>
+<li>PHP 源代码</li>
+<li>Java 源代码</li>
+<li>ASP.NET(C#) 源代码</li>
+<li>Ruby (on Rails) 源代码</li>
+</ul>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2016/01/31/salted-password-hashing-do-it-right/#more" rel="contents">
+                Read more &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+  </section>
+
+  
+  <nav class="pagination">
+    <a class="extend prev" rel="prev" href="/"><i class="fa fa-angle-left" aria-label="Previous page"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span>
+  </nav>
+
+
+
+          </div>
+          
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <div class="site-overview-wrap sidebar-panel sidebar-panel-active">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/uploads/avatar.png" alt="Hans">
+            
+              <p class="site-author-name" itemprop="name">Hans</p>
+              <div class="site-description motion-element" itemprop="description"></div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">14</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">3</span>
+                    <span class="site-state-item-name">tags</span>
+                  
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/Hans0924" title="GitHub &rarr; https://github.com/Hans0924" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="mailto:ann9963@outlook.com" title="E-Mail &rarr; mailto:ann9963@outlook.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Hans</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.0.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.1"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.1"></script>
+
+
+
+
+  
+
+  
+
+
+  <script src="/js/src/next-boot.js?v=7.0.1"></script>
+
+
+  
+  
+
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="背景在传统的软件系统中，如果想要保证一次业务请求中的多次修改操作结果具有一致性，可以使用事务（Transaction）来控制操作整体的提交（Commit）或回滚（Rollback）。事务为业务操作提供了强一致性保证，其特性可总结为ACID，即：  原子性(Atomicity)：一个事务（transaction）中的所有操作，或者全部完成，或者全部不完成，不会结束在中间某个环节； 一致性(Consi">
+<meta name="keywords" content="分布式">
+<meta property="og:type" content="article">
+<meta property="og:title" content="分布式一致性协议">
+<meta property="og:url" content="https://fullgc.dev/2018/02/18/distributed-consistency/index.html">
+<meta property="og:site_name" content="Full GC">
+<meta property="og:description" content="背景在传统的软件系统中，如果想要保证一次业务请求中的多次修改操作结果具有一致性，可以使用事务（Transaction）来控制操作整体的提交（Commit）或回滚（Rollback）。事务为业务操作提供了强一致性保证，其特性可总结为ACID，即：  原子性(Atomicity)：一个事务（transaction）中的所有操作，或者全部完成，或者全部不完成，不会结束在中间某个环节； 一致性(Consi">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-03-27T13:51:03.875Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="分布式一致性协议">
+<meta name="twitter:description" content="背景在传统的软件系统中，如果想要保证一次业务请求中的多次修改操作结果具有一致性，可以使用事务（Transaction）来控制操作整体的提交（Commit）或回滚（Rollback）。事务为业务操作提供了强一致性保证，其特性可总结为ACID，即：  原子性(Atomicity)：一个事务（transaction）中的所有操作，或者全部完成，或者全部不完成，不会结束在中间某个环节； 一致性(Consi">
+
+
+
+
+
+
+  <link rel="canonical" href="https://fullgc.dev/2018/02/18/distributed-consistency/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>分布式一致性协议 | Full GC</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Full GC</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">Stop the world, clean your mind.</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://fullgc.dev/2018/02/18/distributed-consistency/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Hans">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/uploads/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Full GC">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">分布式一致性协议
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2018-02-18 17:47:00" itemprop="dateCreated datePublished" datetime="2018-02-18T17:47:00+08:00">2018-02-18</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2019-03-27 21:51:03" itemprop="dateModified" datetime="2019-03-27T21:51:03+08:00">2019-03-27</time>
+              
+            
+          </span>
+
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>在传统的软件系统中，如果想要保证一次业务请求中的多次修改操作结果具有一致性，可以使用事务（Transaction）来控制操作整体的提交（Commit）或回滚（Rollback）。事务为业务操作提供了强一致性保证，其特性可总结为ACID，即：</p>
+<ul>
+<li>原子性(Atomicity)：一个事务（transaction）中的所有操作，或者全部完成，或者全部不完成，不会结束在中间某个环节；</li>
+<li>一致性(Consistency)：在事务开始之前和事务结束以后，数据库的完整性没有被破坏；</li>
+<li>隔离型(Isolation)：数据库允许多个并发事务同时对其数据进行读写和修改的能力，隔离性可以防止多个事务并发执行时由于交叉执行而导致数据的不一致；</li>
+<li>持久性(Durability)：事务处理结束后，对数据的修改就是永久的，即便系统故障也不会丢失。</li>
+</ul>
+<p>互联网时代，分布式系统的应用越来越普遍，在动辄几百上千的研发团队中，软件系统如果仍然采用单一应用的开发模式，团队的协作成本是非常高的，因此服务化和微服务成为了目前行业的主流。然而，分布式系统带来低耦合，高可扩展性的同时，单个业务可能包含多个应用调用，无法使用传统的事务来为所有应用提供一致性保证。此时，有人提出并证明了CAP定理，即对于一个分布式计算系统来说，不可能同时满足以下三点：</p>
+<ul>
+<li>一致性(Consistency)：即更新操作成功并返回客户端完成后，所有节点在同一时间的数据完全一致；</li>
+<li>可用性(Availability)：即服务一直可用，而且是正常响应时间；</li>
+<li>分区容错性(Partition tolerance)：分布式系统在遇到某节点或网络分区故障的时候，仍然能够对外提供满足一致性和可用性的服务。</li>
+</ul>
+<p>由于无法同时满足CAP三个特性，有人又提出了BASE理论，即：</p>
+<ul>
+<li>基本可用(Basically Available)：基本可用是指分布式系统在出现故障的时候，允许损失部分可用性，即保证核心可用；</li>
+<li>软状态(Soft State)：软状态是指允许系统存在中间状态，而该中间状态不会影响系统整体可用性；</li>
+<li>最终一致性(Eventual Consistency)：最终一致性是指系统中的所有数据副本经过一定时间后，最终能够达到一致的状态。</li>
+</ul>
+<a id="more"></a>
+<h2 id="协调者"><a href="#协调者" class="headerlink" title="协调者"></a>协调者</h2><p>在分布式系统中，每个应用能够感知各自的事务执行结果，但无法感知其他应用的事务执行结果，于是我们设立了一个协调者的角色来统一指挥分布式系统中的各个应用执行事务，应用在协调者的指挥下执行事务，并把执行结果汇报给协调者，协调者再综合所有应用的执行结果来通知应用最终提交事务还是中断回滚事务。</p>
+<h2 id="二阶段提交协议（2PC）"><a href="#二阶段提交协议（2PC）" class="headerlink" title="二阶段提交协议（2PC）"></a>二阶段提交协议（2PC）</h2><p>二阶段提交协议将事务执行过程分为两个阶段：准备阶段和执行阶段。</p>
+<h3 id="准备阶段"><a href="#准备阶段" class="headerlink" title="准备阶段"></a>准备阶段</h3><ol>
+<li>协调者向各个应用提交事务请求，并等待应用响应；</li>
+<li>应用执行事务；</li>
+<li>如果应用执行事务成功则向协调者响应可以提交事务，否则向协调者响应不能提交事务。</li>
+</ol>
+<h3 id="执行阶段"><a href="#执行阶段" class="headerlink" title="执行阶段"></a>执行阶段</h3><ol>
+<li>协调者收集所有应用的响应，后续操作分为两种情况：<ol>
+<li>所有应用均响应了可以提交事务，协调者向各个应用发起提交事务请求，并等待应用响应；</li>
+<li>有应用响应了不能提交事务，协调者向各个应用发起中断事务请求，并等待应用响应；</li>
+</ol>
+</li>
+<li>应用执行提交/中断事务；</li>
+<li>应用反馈提交/中断事务执行结果；</li>
+<li>事务执行完成。</li>
+</ol>
+<h3 id="二阶段提交协议的缺点"><a href="#二阶段提交协议的缺点" class="headerlink" title="二阶段提交协议的缺点"></a>二阶段提交协议的缺点</h3><p>二阶段提交协议的原理十分简单，实现也方便，但存在几个比较严重的问题。</p>
+<ol>
+<li>同步阻塞问题。执行过程中，所有应用都是事务阻塞型的。当应用占有公共资源时，其他应用访问公共资源都处于阻塞状态。</li>
+<li>协调者单点故障。协调者在整个事务执行过程中起到了指挥的作用，一旦协调者发生故障，正在进行中的事务将持续占用事务资源，无法完成事务操作。即使重新选举新的协调者，也无法继续进行原先未完成的事务。</li>
+<li>数据不一致。在执行阶段，如果由于网络故障，部分应用没有收到提交事务的请求，将导致只有部分应用执行了事务的提交，这样就出现了数据不一致的问题。</li>
+<li>过于保守。如果参与者在与协调者通信期间出现故障，协调者只能靠超时机制来判断是否需要中断事务，这个策略比较保守，需要更为完善的容错机制，任意一个节点的失败都会导致整个事务的失败。</li>
+</ol>
+<h2 id="三阶段提交协议（3PC）"><a href="#三阶段提交协议（3PC）" class="headerlink" title="三阶段提交协议（3PC）"></a>三阶段提交协议（3PC）</h2><p>由于二阶段提交协议存在着诸如同步阻塞、单点问题、数据不一致等缺陷，所以，人们在二阶段提交协议的基础上提出了三阶段提交协议。<br>三阶段提交协将事务执行过程分为三个阶段：准备阶段、预提交阶段和提交阶段。</p>
+<h3 id="准备阶段-1"><a href="#准备阶段-1" class="headerlink" title="准备阶段"></a>准备阶段</h3><ol>
+<li>协调者询问各个应用是否可以开始事务；</li>
+<li>应用根据自身情况响应协调者。</li>
+</ol>
+<h3 id="预提交阶段"><a href="#预提交阶段" class="headerlink" title="预提交阶段"></a>预提交阶段</h3><ol>
+<li>协调者收集所有应用的响应，后续操作分为两种情况：<ol>
+<li>所有应用均响应了可以开始事务，协调者向各个应用发起事务预提交请求，并等待应用响应；</li>
+<li>有应用响应了不能开始事务，或有应用响应超时，协调者向各个应用发起中断事务请求；</li>
+</ol>
+</li>
+<li>应用执行事务预提交或中断事务，若中断事务，则本次事务结束；</li>
+<li>应用反馈事务执行结果。</li>
+</ol>
+<h3 id="提交阶段"><a href="#提交阶段" class="headerlink" title="提交阶段"></a>提交阶段</h3><ol>
+<li>协调者收集所有应用的响应，后续操作分为两种情况：<ol>
+<li>所有应用均响应了可以提交事务，协调者向各个应用发起提交事务请求，并等待应用响应；</li>
+<li>有应用响应了不能提交事务，或有应用响应超时，协调者向各个应用发起中断事务请求，并等待应用响应；</li>
+</ol>
+</li>
+<li>应用执行提交/中断事务；</li>
+<li>应用反馈提交/中断事务执行结果；</li>
+<li>事务执行完成。</li>
+</ol>
+<blockquote>
+<p>在提交阶段，如果应用由于各种原因没有收到协调者的提交事务或中断事务请求，在等待超时后，将继续进行事务的提交。</p>
+</blockquote>
+<h3 id="三阶段提交协议的缺点"><a href="#三阶段提交协议的缺点" class="headerlink" title="三阶段提交协议的缺点"></a>三阶段提交协议的缺点</h3><p>三阶段提交协议相比二阶段提交协议，降低了阻塞的范围，出现协调者单点故障后能够继续完成事务，但如果在预提交阶段出现网络分区问题，仍会出现数据不一致的问题。</p>
+<h2 id="Paxos协议"><a href="#Paxos协议" class="headerlink" title="Paxos协议"></a>Paxos协议</h2><h3 id="基本思想"><a href="#基本思想" class="headerlink" title="基本思想"></a>基本思想</h3><p>Paxos协议为了在可能发生网络异常或服务器故障的分布式系统中能够快速并且正确地对某一数据的值达成一致，在Leader选举或数据修改时，采取了一种类似国会投票的少数服从多数的机制。它能够保证在2F+1个节点的分布式系统中，允许F个节点同时出现故障。</p>
+<p>分布式系统中的节点被分为三种角色：</p>
+<ul>
+<li>Proposer（提案人）：提出一个值，用于投票决议；</li>
+<li>Acceptor（接受者）：对每个提案进行投票；</li>
+<li>Learner（观察员）：可获知投票结果，无投票权。</li>
+</ul>
+<h3 id="准备阶段-2"><a href="#准备阶段-2" class="headerlink" title="准备阶段"></a>准备阶段</h3><ol>
+<li>Proposer提出一个提案，并为提案附上一个全局唯一且递增的编号；</li>
+<li>Acceptor收到提案，将提案的编号与他已接受的最大提案编号进行比较；<ol>
+<li>若新提案的编号小于已接受的最大编号，Acceptor将拒绝新提案，回复提案已被拒绝；</li>
+<li>若新提案的编号大于已接受的最大编号，Acceptor将接受新提案，回复提案已被接受；<ol>
+<li>若之前从未接受过同一个事务的其他提案，则仅回复提案已被接受；</li>
+<li>若之前已接受过同一个事务的其他提案，则将已接受的编号和提案内容一并回复给Proposer；</li>
+</ol>
+</li>
+</ol>
+</li>
+</ol>
+<h3 id="接受阶段"><a href="#接受阶段" class="headerlink" title="接受阶段"></a>接受阶段</h3><ol>
+<li>收到半数以上Acceptor接受提案回复的Proposer可以发起接受请求，请求中同样需要附上提案编号和提案内容；<ol>
+<li>若收到的回复都没有附带其他提案编号和内容，则以自己提出的提案内容发起接受请求；</li>
+<li>若收到的回复附带了其他提案编号和内容，则将自己的提案内容修改为回复的提案内容；</li>
+</ol>
+</li>
+<li>Acceptor收到接受请求，将请求中提案的编号与他已接受的最大提案编号进行比较；<ol>
+<li>若提案的编号小于已接受的最大编号，Acceptor将拒绝该接受请求，回复接受请求已被拒绝；</li>
+<li>若提案的编号大于已接受的最大编号，Acceptor将接受该接受请求，并提交提案修改的内容，回复接受请求已被接受；</li>
+</ol>
+</li>
+<li>Proposer收到半数以上Acceptor接受的回复，将结果通知所有Learner。</li>
+</ol>
+<h2 id="Raft协议"><a href="#Raft协议" class="headerlink" title="Raft协议"></a>Raft协议</h2><h3 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h3><p>不同于Paxos协议直接从分布式一致性问题出发推导出来，Raft协议则是从多副本状态机的角度提出，用于管理多副本状态机的日志复制。Raft实现了和Paxos相同的功能，它将一致性分解为多个子问题：Leader选举（Leader election）、日志同步（Log replication）、安全性（Safety）、日志压缩（Log compaction）、成员变更（Membership change）等。同时，Raft协议使用了更强的假设来减少了需要考虑的状态，使之变的易于理解和实现。</p>
+<p>Raft将系统中的角色分为三种：</p>
+<ul>
+<li>Leader：接受客户端请求，并向Follower同步请求日志，当日志同步到大多数节点上后告诉Follower提交日志；</li>
+<li>Follower：接受并持久化Leader同步的日志，在Leader告之日志可以提交之后，提交日志；</li>
+<li>Candidate：Leader选举过程中的临时角色。</li>
+</ul>
+<p>Raft要求系统在任意时刻最多只有一个Leader，正常工作期间只有Leader和Followers。</p>
+<p>Raft将时间分为一个个的任期（term），每一个任期的开始都是Leader选举。在成功选举Leader之后，Leader会在整个任期内管理整个集群。</p>
+<h3 id="Leader选举"><a href="#Leader选举" class="headerlink" title="Leader选举"></a>Leader选举</h3><p>Raft 使用心跳触发Leader选举。当服务器启动时，初始化为Follower。Leader向所有Followers周期性发送心跳。如果Follower在选举超时时间内没有收到Leader的心跳，就会认为Leader挂了，等待一段随机的时间后发起一次Leader选举。</p>
+<ol>
+<li>Follower将其任期加一然后在一定超时时间（150ms-300ms随机）后转为Candidate；</li>
+<li>Candidate首先给自己投票，并向其他服务器发送投票邀请RequestVote RPCs；</li>
+<li>如果其他服务器还没有投票，那么就给该Candidate投票；</li>
+<li>选举结果分为种情况；<ol>
+<li>一个Candidate获得多数投票，则该Candidate成为新的Leader；</li>
+<li>多个Candidate获得的票数相同，则等待选举时间超时后开始新一轮的选举。</li>
+</ol>
+</li>
+</ol>
+<h3 id="日志同步"><a href="#日志同步" class="headerlink" title="日志同步"></a>日志同步</h3><p>一旦 Leader 被选了出来，就开始响应客户端的请求。 每一条客户端的请求都包含一条需要被复制状态机执行的命令。</p>
+<ol>
+<li>Leader 接收客户端请求；</li>
+<li>Leader 将命令作为一个日志条目加到它的日志中去；</li>
+<li>Leader 并发的向其他节点发出 AppendEntries RPCs 请求；</li>
+<li>当条目被安全的复制之后，Leader 将条目添加到状态机中， 并向客户端返回结果。</li>
+</ol>
+<blockquote>
+<p>如果 follower 崩溃或者运行的很慢、或者发生了丢包， leader 不停的向 follower 发送AppendEntries RPC， 直到所有的 follower 存储了所有的 AppendEntries。</p>
+</blockquote>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/分布式/" rel="tag"># 分布式</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/11/10/double-checked-locking-is-broken/" rel="next" title="“双重校验锁不可靠”声明">
+                <i class="fa fa-chevron-left"></i> “双重校验锁不可靠”声明
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/05/07/the-difference-between-cluster-and-distributed/" rel="prev" title="集群与分布式的区别">
+                集群与分布式的区别 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/uploads/avatar.png" alt="Hans">
+            
+              <p class="site-author-name" itemprop="name">Hans</p>
+              <div class="site-description motion-element" itemprop="description"></div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">14</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">3</span>
+                    <span class="site-state-item-name">tags</span>
+                  
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/Hans0924" title="GitHub &rarr; https://github.com/Hans0924" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="mailto:ann9963@outlook.com" title="E-Mail &rarr; mailto:ann9963@outlook.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#背景"><span class="nav-number">1.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#协调者"><span class="nav-number">2.</span> <span class="nav-text">协调者</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二阶段提交协议（2PC）"><span class="nav-number">3.</span> <span class="nav-text">二阶段提交协议（2PC）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#准备阶段"><span class="nav-number">3.1.</span> <span class="nav-text">准备阶段</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#执行阶段"><span class="nav-number">3.2.</span> <span class="nav-text">执行阶段</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#二阶段提交协议的缺点"><span class="nav-number">3.3.</span> <span class="nav-text">二阶段提交协议的缺点</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三阶段提交协议（3PC）"><span class="nav-number">4.</span> <span class="nav-text">三阶段提交协议（3PC）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#准备阶段-1"><span class="nav-number">4.1.</span> <span class="nav-text">准备阶段</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#预提交阶段"><span class="nav-number">4.2.</span> <span class="nav-text">预提交阶段</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#提交阶段"><span class="nav-number">4.3.</span> <span class="nav-text">提交阶段</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#三阶段提交协议的缺点"><span class="nav-number">4.4.</span> <span class="nav-text">三阶段提交协议的缺点</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Paxos协议"><span class="nav-number">5.</span> <span class="nav-text">Paxos协议</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#基本思想"><span class="nav-number">5.1.</span> <span class="nav-text">基本思想</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#准备阶段-2"><span class="nav-number">5.2.</span> <span class="nav-text">准备阶段</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#接受阶段"><span class="nav-number">5.3.</span> <span class="nav-text">接受阶段</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Raft协议"><span class="nav-number">6.</span> <span class="nav-text">Raft协议</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#概述"><span class="nav-number">6.1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Leader选举"><span class="nav-number">6.2.</span> <span class="nav-text">Leader选举</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#日志同步"><span class="nav-number">6.3.</span> <span class="nav-text">日志同步</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Hans</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.0.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.1"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.1"></script>
+
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/next-boot.js?v=7.0.1"></script>
+
+
+  
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

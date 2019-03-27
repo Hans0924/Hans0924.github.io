@@ -98,29 +98,25 @@
 
 
 
-  <meta name="description" content="排查过程线上一台服务器从周一下午开始告警，告警内容为“Full GC比较频繁”。一开始大家都没有在意，猜想可能是部分业务压力有点大了，等高峰期过了就好了。 然而告警邮件的提醒一直响到了第二天。 周二中午，脆骨首先开始了排查，登录跳板机后，通过jstat工具查看GC情况，发现该应用的老年代占用100%，大约每5秒触发一次Full GC，但Full GC后没有效果，老年代占用依然为100%，据此我们推">
-<meta name="keywords" content="java,csharp,c,c++,program,php">
+  <meta name="description" content="垃圾收集器与内存分配策略对象的生存与死亡引用计数与可达性分析算法 引用计数：当对象被引用时，计数器+1；当引用失效时，计数器-1。效率高，但无法解决循环引用的问题。 可达性分析：以GC Root为起始点，向下搜索，搜索走过的路径称为引用链，当从GC Root到对象不可达时，该对象为孤立对象，即可回收。 GC Root:  虚拟机栈（栈帧中的局部变量表）中引用的对象 方法区中类静态属性引用的对象 方">
+<meta name="keywords" content="java,jvm">
 <meta property="og:type" content="article">
-<meta property="og:title" content="记一次Full GC频繁排查过程">
-<meta property="og:url" content="https://fullgc.dev/2019/03/27/a-full-gc-investigation-report/index.html">
+<meta property="og:title" content="深入理解Java虚拟机学习笔记（二）">
+<meta property="og:url" content="https://fullgc.dev/2017/09/16/learning-jvm-2/index.html">
 <meta property="og:site_name" content="Full GC">
-<meta property="og:description" content="排查过程线上一台服务器从周一下午开始告警，告警内容为“Full GC比较频繁”。一开始大家都没有在意，猜想可能是部分业务压力有点大了，等高峰期过了就好了。 然而告警邮件的提醒一直响到了第二天。 周二中午，脆骨首先开始了排查，登录跳板机后，通过jstat工具查看GC情况，发现该应用的老年代占用100%，大约每5秒触发一次Full GC，但Full GC后没有效果，老年代占用依然为100%，据此我们推">
+<meta property="og:description" content="垃圾收集器与内存分配策略对象的生存与死亡引用计数与可达性分析算法 引用计数：当对象被引用时，计数器+1；当引用失效时，计数器-1。效率高，但无法解决循环引用的问题。 可达性分析：以GC Root为起始点，向下搜索，搜索走过的路径称为引用链，当从GC Root到对象不可达时，该对象为孤立对象，即可回收。 GC Root:  虚拟机栈（栈帧中的局部变量表）中引用的对象 方法区中类静态属性引用的对象 方">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="https://fullgc.dev/images/WechatIMG599.png">
-<meta property="og:image" content="https://fullgc.dev/images/WechatIMG598.png">
-<meta property="og:image" content="https://fullgc.dev/images/WechatIMG600.png">
-<meta property="og:updated_time" content="2019-03-27T13:49:45.815Z">
+<meta property="og:updated_time" content="2019-03-27T13:50:09.591Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="记一次Full GC频繁排查过程">
-<meta name="twitter:description" content="排查过程线上一台服务器从周一下午开始告警，告警内容为“Full GC比较频繁”。一开始大家都没有在意，猜想可能是部分业务压力有点大了，等高峰期过了就好了。 然而告警邮件的提醒一直响到了第二天。 周二中午，脆骨首先开始了排查，登录跳板机后，通过jstat工具查看GC情况，发现该应用的老年代占用100%，大约每5秒触发一次Full GC，但Full GC后没有效果，老年代占用依然为100%，据此我们推">
-<meta name="twitter:image" content="https://fullgc.dev/images/WechatIMG599.png">
+<meta name="twitter:title" content="深入理解Java虚拟机学习笔记（二）">
+<meta name="twitter:description" content="垃圾收集器与内存分配策略对象的生存与死亡引用计数与可达性分析算法 引用计数：当对象被引用时，计数器+1；当引用失效时，计数器-1。效率高，但无法解决循环引用的问题。 可达性分析：以GC Root为起始点，向下搜索，搜索走过的路径称为引用链，当从GC Root到对象不可达时，该对象为孤立对象，即可回收。 GC Root:  虚拟机栈（栈帧中的局部变量表）中引用的对象 方法区中类静态属性引用的对象 方">
 
 
 
 
 
 
-  <link rel="canonical" href="https://fullgc.dev/2019/03/27/a-full-gc-investigation-report/">
+  <link rel="canonical" href="https://fullgc.dev/2017/09/16/learning-jvm-2/">
 
 
 
@@ -130,7 +126,7 @@
   };
 </script>
 
-  <title>记一次Full GC频繁排查过程 | Full GC</title>
+  <title>深入理解Java虚拟机学习笔记（二） | Full GC</title>
   
 
 
@@ -299,7 +295,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://fullgc.dev/2019/03/27/a-full-gc-investigation-report/">
+    <link itemprop="mainEntityOfPage" href="https://fullgc.dev/2017/09/16/learning-jvm-2/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Hans">
@@ -316,7 +312,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">记一次Full GC频繁排查过程
+          <h1 class="post-title" itemprop="name headline">深入理解Java虚拟机学习笔记（二）
 
               
             
@@ -342,12 +338,24 @@
                 
               
 
-              <time title="Created: 2019-03-27 20:04:04 / Modified: 21:49:45" itemprop="dateCreated datePublished" datetime="2019-03-27T20:04:04+08:00">2019-03-27</time>
+              <time title="Created: 2017-09-16 10:00:00" itemprop="dateCreated datePublished" datetime="2017-09-16T10:00:00+08:00">2017-09-16</time>
             
 
             
               
 
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2019-03-27 21:50:09" itemprop="dateModified" datetime="2019-03-27T21:50:09+08:00">2019-03-27</time>
               
             
           </span>
@@ -381,21 +389,53 @@
       
 
       
-        <h2 id="排查过程"><a href="#排查过程" class="headerlink" title="排查过程"></a>排查过程</h2><p>线上一台服务器从周一下午开始告警，告警内容为“Full GC比较频繁”。一开始大家都没有在意，猜想可能是部分业务压力有点大了，等高峰期过了就好了。</p>
-<p>然而告警邮件的提醒一直响到了第二天。</p>
-<p>周二中午，脆骨首先开始了排查，登录跳板机后，通过jstat工具查看GC情况，发现该应用的老年代占用100%，大约每5秒触发一次Full GC，但Full GC后没有效果，老年代占用依然为100%，据此我们推测应该是有大量业务对象滞留在了内存中。我们开始第一次尝试使用jmap来dump堆，以期通过分析堆中的对象来定位问题，然而第一次仅dump出18M的内容，分析后没有发现有价值的内容，考虑到老年代长期占用100%已经使得该应用无法正确响应线上请求了，我们重启了该应用，观察启动后的GC情况是正常的。</p>
-<p>周二晚上下班后，我和脆骨再次登录服务器排查该问题。21时11分，应用日志显示有一家店启动了某一类型的活动，接下来的几分钟里，应用的老年代占用率迅速上升，并导致开始频繁Full GC，告警邮件也再次出现。到此我们初步确定了问题是由该类型的活动导致的，并第二次使用jmap将堆dump出来进行分析，这次成功dump出4.3G的hprof文件。</p>
+        <h2 id="垃圾收集器与内存分配策略"><a href="#垃圾收集器与内存分配策略" class="headerlink" title="垃圾收集器与内存分配策略"></a>垃圾收集器与内存分配策略</h2><h3 id="对象的生存与死亡"><a href="#对象的生存与死亡" class="headerlink" title="对象的生存与死亡"></a>对象的生存与死亡</h3><h4 id="引用计数与可达性分析算法"><a href="#引用计数与可达性分析算法" class="headerlink" title="引用计数与可达性分析算法"></a>引用计数与可达性分析算法</h4><ol>
+<li>引用计数：当对象被引用时，计数器+1；当引用失效时，计数器-1。效率高，但无法解决循环引用的问题。</li>
+<li>可达性分析：以GC Root为起始点，向下搜索，搜索走过的路径称为引用链，当从GC Root到对象不可达时，该对象为孤立对象，即可回收。<ul>
+<li>GC Root: <ul>
+<li>虚拟机栈（栈帧中的局部变量表）中引用的对象</li>
+<li>方法区中类静态属性引用的对象</li>
+<li>方法区中常量引用的对象</li>
+<li>本地方法栈中JNI引用的对象</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+<h4 id="引用强度"><a href="#引用强度" class="headerlink" title="引用强度"></a>引用强度</h4><ol>
+<li>强引用：程序代码中普遍存在的，如使用new操作符产生的引用。只要强引用还存在，系统将不会回收被强引用的对象。</li>
+<li>软引用：SoftReference类实现，用来描述一些还有用但是并非必需的对象。当系统将要发生内存溢出时，软引用对象将被列入可回收的范围内并进行二次回收，若回收后仍然没有足够的内存，系统才会抛出内存溢出异常。</li>
+<li>弱引用：WeakReference类实现，用来描述非必需对象。无论内存是否足够，弱引用对象都只能生存到发生下一次垃圾收集之前。</li>
+<li>虚引用：PhantomReference类实现，仅用于在对象被回收时得到通知。虚引用完全不影响对象的生存时间，也无法通过虚引用来获取一个对象实例。</li>
+</ol>
 <a id="more"></a>
-<p><img src="/images/WechatIMG599.png" alt="dump出的堆对象情况1"></p>
-<p><img src="/images/WechatIMG598.png" alt="dump出的堆对象情况2"></p>
-<p>在将dump出的hprof文件载入visualvm中之后，发现char数组占用了51.4%的堆空间，进一步分析发现有一个ArrayList存储了3174万个字符串，内容均为会员id。通过分析代码，我们发现有一段逻辑是需要从数据库中查询之前该活动已参与的对象，为了减轻数据库压力，开发通过循环分页查询来一页页地将数据查询出来，直到查询不到数据时跳出循环。在查询数据的代码中，我们发现周一有过一次代码变更，修改了传入查询语句的分页参数，更加深入地分析代码后，我们发现变更的分页参数并未赋值，其实际值总是为0，导致每次查询都是查第一页的数据，无法跳出循环，查询的结果又被缓存到一个ArrayList中，这才导致了老年代被填满，不断触发Full GC。</p>
-<p>在调整了查询数据的代码后，老年代占用恢复正常，Full GC也不再频繁出现。</p>
-<p><img src="/images/WechatIMG600.png" alt="full gc次数监控"></p>
-<h2 id="经验总结"><a href="#经验总结" class="headerlink" title="经验总结"></a>经验总结</h2><ol>
-<li>关键操作一定要充分单测；</li>
-<li>循环跳出条件如果依赖于数据库查询，对查询的语句和各个参数必须做到心中有数；</li>
-<li>流程测试，对每个流程将要出现的结果要有预期，并在测试完成后将实际结果与预期结果进行比对；</li>
-<li>线上告警要重视，对于应用的运行指标出现的异常要敏感，尽早定位问题，解决问题。</li>
+<h4 id="对象的“自我拯救”"><a href="#对象的“自我拯救”" class="headerlink" title="对象的“自我拯救”"></a>对象的“自我拯救”</h4><ol>
+<li>覆盖finalize()方法，且尚未被系统调用</li>
+<li>在finalize()方法中与引用链重新建立引用关系</li>
+<li>这种方法只能使用一次，因为finalize()方法只能被系统调用一次，在面临下一次垃圾收集的时候，finalize()方法将不再被调用</li>
+</ol>
+<h4 id="方法区的回收"><a href="#方法区的回收" class="headerlink" title="方法区的回收"></a>方法区的回收</h4><ol>
+<li>常量：与堆中的对象的回收类似，当没有字面量引用常量池的常量时，如有必要，常量将会被清理出常量池。</li>
+<li>方法：与常量类似。</li>
+<li>字段：与常量类似。</li>
+<li>类：需要满足“无用的类”的条件，即使满足虚拟机也不一定会回收，可通过参数控制。<ul>
+<li>无用的类判定条件：<ul>
+<li>该类的所有实例都已被回收，即堆中不存在该类的任何实例。</li>
+<li>加载该类的ClassLoader已被回收。</li>
+<li>该类的java.lang.Class方法没有被引用，无法在任何地方通过反射访问该类的方法。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+<h3 id="垃圾回收算法"><a href="#垃圾回收算法" class="headerlink" title="垃圾回收算法"></a>垃圾回收算法</h3><ol>
+<li>“标记-清除”算法：首先标记出所有需要回收的对象，在标记完成后统一回收所有被标记的对象。<strong>缺点：效率低；产生大量内存碎片。</strong></li>
+<li>“复制”算法：将可用内存划分为大小相等的两块，每次只使用其中的一块，当进行垃圾回收时，将存活的对象复制到另一块上，再把原来的空间一次清理掉。<strong>优点：实现简单，运行高效。缺点：将内存缩小了一半，代价高昂；存活率较高时复制操作增加，效率降低。</strong><blockquote>
+<p>Hotspot VM对新生代的垃圾回收算法采用的是复制算法，但没有将两块内存划分为大小相等，而是分为Edenh和Survivor，比例为8:1，当Survivor空间不够用时，需要依赖其他内存进行分配担保。  </p>
+</blockquote>
+</li>
+<li>“标记-整理”算法：与“标记-清除”算法一样，都是先标记出所有需要回收的对象，但后续不是直接清理可回收的对象，而是让存活的对象向一端移动，然后清理掉端边界以外的内存。</li>
+<li>分代收集算法：针对对象存活周期的不同将内存划分为若干块，对每一块采用合适的算法去进行垃圾回收。如新生代的存活率较低，则采用复制算法；老年代存活率较高，且没有额外内存提供分配担保，必须采用“标记-清除”或“标记-整理”算法。</li>
 </ol>
 
       
@@ -418,6 +458,12 @@
 
     <footer class="post-footer">
       
+        <div class="post-tags">
+          
+            <a href="/tags/java-jvm/" rel="tag"># java,jvm</a>
+          
+        </div>
+      
 
       
       
@@ -427,8 +473,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2018/05/07/the-difference-between-cluster-and-distributed/" rel="next" title="集群与分布式的区别">
-                <i class="fa fa-chevron-left"></i> 集群与分布式的区别
+              <a href="/2017/09/14/learning-jvm-1/" rel="next" title="深入理解Java虚拟机学习笔记（一）">
+                <i class="fa fa-chevron-left"></i> 深入理解Java虚拟机学习笔记（一）
               </a>
             
           </div>
@@ -436,6 +482,10 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/09/17/learning-jvm-3/" rel="prev" title="深入理解Java虚拟机学习笔记（三）">
+                深入理解Java虚拟机学习笔记（三） <i class="fa fa-chevron-right"></i>
+              </a>
             
           </div>
         </div>
@@ -589,7 +639,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#排查过程"><span class="nav-number">1.</span> <span class="nav-text">排查过程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#经验总结"><span class="nav-number">2.</span> <span class="nav-text">经验总结</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#垃圾收集器与内存分配策略"><span class="nav-number">1.</span> <span class="nav-text">垃圾收集器与内存分配策略</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#对象的生存与死亡"><span class="nav-number">1.1.</span> <span class="nav-text">对象的生存与死亡</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#引用计数与可达性分析算法"><span class="nav-number">1.1.1.</span> <span class="nav-text">引用计数与可达性分析算法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#引用强度"><span class="nav-number">1.1.2.</span> <span class="nav-text">引用强度</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#对象的“自我拯救”"><span class="nav-number">1.1.3.</span> <span class="nav-text">对象的“自我拯救”</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#方法区的回收"><span class="nav-number">1.1.4.</span> <span class="nav-text">方法区的回收</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#垃圾回收算法"><span class="nav-number">1.2.</span> <span class="nav-text">垃圾回收算法</span></a></li></ol></li></ol></div>
             
 
           </div>

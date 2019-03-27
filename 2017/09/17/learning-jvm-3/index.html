@@ -98,29 +98,25 @@
 
 
 
-  <meta name="description" content="排查过程线上一台服务器从周一下午开始告警，告警内容为“Full GC比较频繁”。一开始大家都没有在意，猜想可能是部分业务压力有点大了，等高峰期过了就好了。 然而告警邮件的提醒一直响到了第二天。 周二中午，脆骨首先开始了排查，登录跳板机后，通过jstat工具查看GC情况，发现该应用的老年代占用100%，大约每5秒触发一次Full GC，但Full GC后没有效果，老年代占用依然为100%，据此我们推">
-<meta name="keywords" content="java,csharp,c,c++,program,php">
+  <meta name="description" content="Hotspot VM的实现 OopMap：在类加载完成后记录下对象内的数据类型与偏移量，在JIT编译过程中记录下栈和寄存器中哪些位置是引用。 安全点：在指令序列复用时，如方法调用，循环跳转，异常跳转等。 中断： 抢先式中断：不需要线程代码配合，当GC发生时，先把所有线程都中断，如果发现线程中断的点不在安全点上，则恢复线程，让他跑到安全点上。 主动式中断：当GC需要中断线程的时候，在安全点上设置中断">
+<meta name="keywords" content="java,jvm">
 <meta property="og:type" content="article">
-<meta property="og:title" content="记一次Full GC频繁排查过程">
-<meta property="og:url" content="https://fullgc.dev/2019/03/27/a-full-gc-investigation-report/index.html">
+<meta property="og:title" content="深入理解Java虚拟机学习笔记（三）">
+<meta property="og:url" content="https://fullgc.dev/2017/09/17/learning-jvm-3/index.html">
 <meta property="og:site_name" content="Full GC">
-<meta property="og:description" content="排查过程线上一台服务器从周一下午开始告警，告警内容为“Full GC比较频繁”。一开始大家都没有在意，猜想可能是部分业务压力有点大了，等高峰期过了就好了。 然而告警邮件的提醒一直响到了第二天。 周二中午，脆骨首先开始了排查，登录跳板机后，通过jstat工具查看GC情况，发现该应用的老年代占用100%，大约每5秒触发一次Full GC，但Full GC后没有效果，老年代占用依然为100%，据此我们推">
+<meta property="og:description" content="Hotspot VM的实现 OopMap：在类加载完成后记录下对象内的数据类型与偏移量，在JIT编译过程中记录下栈和寄存器中哪些位置是引用。 安全点：在指令序列复用时，如方法调用，循环跳转，异常跳转等。 中断： 抢先式中断：不需要线程代码配合，当GC发生时，先把所有线程都中断，如果发现线程中断的点不在安全点上，则恢复线程，让他跑到安全点上。 主动式中断：当GC需要中断线程的时候，在安全点上设置中断">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="https://fullgc.dev/images/WechatIMG599.png">
-<meta property="og:image" content="https://fullgc.dev/images/WechatIMG598.png">
-<meta property="og:image" content="https://fullgc.dev/images/WechatIMG600.png">
-<meta property="og:updated_time" content="2019-03-27T13:49:45.815Z">
+<meta property="og:updated_time" content="2019-03-27T13:50:17.065Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="记一次Full GC频繁排查过程">
-<meta name="twitter:description" content="排查过程线上一台服务器从周一下午开始告警，告警内容为“Full GC比较频繁”。一开始大家都没有在意，猜想可能是部分业务压力有点大了，等高峰期过了就好了。 然而告警邮件的提醒一直响到了第二天。 周二中午，脆骨首先开始了排查，登录跳板机后，通过jstat工具查看GC情况，发现该应用的老年代占用100%，大约每5秒触发一次Full GC，但Full GC后没有效果，老年代占用依然为100%，据此我们推">
-<meta name="twitter:image" content="https://fullgc.dev/images/WechatIMG599.png">
+<meta name="twitter:title" content="深入理解Java虚拟机学习笔记（三）">
+<meta name="twitter:description" content="Hotspot VM的实现 OopMap：在类加载完成后记录下对象内的数据类型与偏移量，在JIT编译过程中记录下栈和寄存器中哪些位置是引用。 安全点：在指令序列复用时，如方法调用，循环跳转，异常跳转等。 中断： 抢先式中断：不需要线程代码配合，当GC发生时，先把所有线程都中断，如果发现线程中断的点不在安全点上，则恢复线程，让他跑到安全点上。 主动式中断：当GC需要中断线程的时候，在安全点上设置中断">
 
 
 
 
 
 
-  <link rel="canonical" href="https://fullgc.dev/2019/03/27/a-full-gc-investigation-report/">
+  <link rel="canonical" href="https://fullgc.dev/2017/09/17/learning-jvm-3/">
 
 
 
@@ -130,7 +126,7 @@
   };
 </script>
 
-  <title>记一次Full GC频繁排查过程 | Full GC</title>
+  <title>深入理解Java虚拟机学习笔记（三） | Full GC</title>
   
 
 
@@ -299,7 +295,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://fullgc.dev/2019/03/27/a-full-gc-investigation-report/">
+    <link itemprop="mainEntityOfPage" href="https://fullgc.dev/2017/09/17/learning-jvm-3/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Hans">
@@ -316,7 +312,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">记一次Full GC频繁排查过程
+          <h1 class="post-title" itemprop="name headline">深入理解Java虚拟机学习笔记（三）
 
               
             
@@ -342,12 +338,24 @@
                 
               
 
-              <time title="Created: 2019-03-27 20:04:04 / Modified: 21:49:45" itemprop="dateCreated datePublished" datetime="2019-03-27T20:04:04+08:00">2019-03-27</time>
+              <time title="Created: 2017-09-17 10:00:00" itemprop="dateCreated datePublished" datetime="2017-09-17T10:00:00+08:00">2017-09-17</time>
             
 
             
               
 
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2019-03-27 21:50:17" itemprop="dateModified" datetime="2019-03-27T21:50:17+08:00">2019-03-27</time>
               
             
           </span>
@@ -381,22 +389,53 @@
       
 
       
-        <h2 id="排查过程"><a href="#排查过程" class="headerlink" title="排查过程"></a>排查过程</h2><p>线上一台服务器从周一下午开始告警，告警内容为“Full GC比较频繁”。一开始大家都没有在意，猜想可能是部分业务压力有点大了，等高峰期过了就好了。</p>
-<p>然而告警邮件的提醒一直响到了第二天。</p>
-<p>周二中午，脆骨首先开始了排查，登录跳板机后，通过jstat工具查看GC情况，发现该应用的老年代占用100%，大约每5秒触发一次Full GC，但Full GC后没有效果，老年代占用依然为100%，据此我们推测应该是有大量业务对象滞留在了内存中。我们开始第一次尝试使用jmap来dump堆，以期通过分析堆中的对象来定位问题，然而第一次仅dump出18M的内容，分析后没有发现有价值的内容，考虑到老年代长期占用100%已经使得该应用无法正确响应线上请求了，我们重启了该应用，观察启动后的GC情况是正常的。</p>
-<p>周二晚上下班后，我和脆骨再次登录服务器排查该问题。21时11分，应用日志显示有一家店启动了某一类型的活动，接下来的几分钟里，应用的老年代占用率迅速上升，并导致开始频繁Full GC，告警邮件也再次出现。到此我们初步确定了问题是由该类型的活动导致的，并第二次使用jmap将堆dump出来进行分析，这次成功dump出4.3G的hprof文件。</p>
-<a id="more"></a>
-<p><img src="/images/WechatIMG599.png" alt="dump出的堆对象情况1"></p>
-<p><img src="/images/WechatIMG598.png" alt="dump出的堆对象情况2"></p>
-<p>在将dump出的hprof文件载入visualvm中之后，发现char数组占用了51.4%的堆空间，进一步分析发现有一个ArrayList存储了3174万个字符串，内容均为会员id。通过分析代码，我们发现有一段逻辑是需要从数据库中查询之前该活动已参与的对象，为了减轻数据库压力，开发通过循环分页查询来一页页地将数据查询出来，直到查询不到数据时跳出循环。在查询数据的代码中，我们发现周一有过一次代码变更，修改了传入查询语句的分页参数，更加深入地分析代码后，我们发现变更的分页参数并未赋值，其实际值总是为0，导致每次查询都是查第一页的数据，无法跳出循环，查询的结果又被缓存到一个ArrayList中，这才导致了老年代被填满，不断触发Full GC。</p>
-<p>在调整了查询数据的代码后，老年代占用恢复正常，Full GC也不再频繁出现。</p>
-<p><img src="/images/WechatIMG600.png" alt="full gc次数监控"></p>
-<h2 id="经验总结"><a href="#经验总结" class="headerlink" title="经验总结"></a>经验总结</h2><ol>
-<li>关键操作一定要充分单测；</li>
-<li>循环跳出条件如果依赖于数据库查询，对查询的语句和各个参数必须做到心中有数；</li>
-<li>流程测试，对每个流程将要出现的结果要有预期，并在测试完成后将实际结果与预期结果进行比对；</li>
-<li>线上告警要重视，对于应用的运行指标出现的异常要敏感，尽早定位问题，解决问题。</li>
+        <h3 id="Hotspot-VM的实现"><a href="#Hotspot-VM的实现" class="headerlink" title="Hotspot VM的实现"></a>Hotspot VM的实现</h3><ol>
+<li>OopMap：在类加载完成后记录下对象内的数据类型与偏移量，在JIT编译过程中记录下栈和寄存器中哪些位置是引用。</li>
+<li>安全点：在指令序列复用时，如方法调用，循环跳转，异常跳转等。</li>
+<li>中断：<ul>
+<li>抢先式中断：不需要线程代码配合，当GC发生时，先把所有线程都中断，如果发现线程中断的点不在安全点上，则恢复线程，让他跑到安全点上。</li>
+<li>主动式中断：当GC需要中断线程的时候，在安全点上设置中断标志，线程执行时主动轮询中断标志，发现标志为真时则主动中断挂起线程。</li>
+</ul>
+</li>
+<li>安全区域：指线程在某一段代码片段中，引用关系不会发生变化，在这个区域中的任意点开始GC都是安全的。在线程处于blocked或sleep状态无法跑到安全点时，采用安全区域可以避免GC长时间等待。</li>
 </ol>
+<h3 id="垃圾收集器"><a href="#垃圾收集器" class="headerlink" title="垃圾收集器"></a>垃圾收集器</h3><ol>
+<li>Serial收集器：单线程，进行垃圾收集时必须暂停所有工作线程。Client模式下默认新生代收集器。采用复制算法。优点：简单高效，进行垃圾收集时不需要与工作线程交互。缺点：必须暂停所有工作线程，停顿时间较长。</li>
+<li>Serial Old收集器：Serial收集器的老年代版本。主要也是在Client模式下使用，在Server模式下，主要与Parallel Scavenge收集器搭配使用，或作为CMS收集器的后备预案。采用标记-整理算法。</li>
+<li>ParNew收集器：Serial收集器的多线程版本，除了能够多线程进行垃圾收集以外，其他与Serial收集器相似，进行垃圾收集时必须暂停所有工作线程。Server模式下默认新生代收集器。采用复制算法。在CPU核心数量较多的时候垃圾收集效率较高，但在CPU核心数量较少的时候效率不一定比Serial收集器高。</li>
+<li>Parallel Scavenge收集器：与ParNew类似，也是多线程收集器，但更关注于达到一个可控制的吞吐量（用于执行用户代码的CPU时间与CPU总消耗时间的比值）。采用复制算法。</li>
+<li>Parallel Old收集器：Parallel Scavenge的老年代版本。采用标记-整理算法。</li>
+<li>CMS收集器：并发收集器，追求最短回收停顿时间，适合追求服务响应速度的服务端应用。采用标记-清除算法。优点：收集过程中耗时最长的步骤都可以和用户工作线程并发工作。缺点：对CPU资源非常敏感，在CPU核心数较少的情况下，对应用的运行速度有较大影响；无法处理浮动垃圾，即在垃圾收集过程中总有新的垃圾不断产生，只能积累到下一次GC再收集；标记-清除算法容易导致产生大量内存碎片，从而提前触发Full GC。</li>
+<li>G1收集器：并行与并发；分代收集；空间整合；可预测的停顿。使用Region划分GC堆。</li>
+</ol>
+<a id="more"></a>
+<blockquote>
+<p>并行收集器与并发收集器</p>
+<ul>
+<li>并行（Parallel）收集器：指多条垃圾收集线程并行工作，但此时用户工作线程仍然处于等待状态。</li>
+<li>并发（Concurrent）收集器：指用户工作线程与垃圾收集线程同时执行（但不一定是并行的，可能会交替执行），用户工作线程在继续执行，而垃圾收集程序运行与另一个CPU上。</li>
+</ul>
+</blockquote>
+<h3 id="内存分配与回收策略"><a href="#内存分配与回收策略" class="headerlink" title="内存分配与回收策略"></a>内存分配与回收策略</h3><ol>
+<li>对象优先在Eden分配：当Eden区空间不足时，将触发Minor GC。</li>
+<li>大对象直接进入老年代</li>
+<li>长期存活的对象将进入老年代：当对象的年龄增加到一定程度时（默认为15），它将会被移动到老年代中。<ul>
+<li>对象的年龄：对象出生并且经过第一次Minor GC后仍然存活并且能被Survivor容纳的话，将被移动到Survivor空间中，并且年龄记为1，在Survivor空间中每经历一次Minor GC，对象的年龄就增加1。</li>
+</ul>
+</li>
+<li>动态年龄判定：如果Survivor空间中相同年龄的对象大小总和大于Survivor空间的一半，则年龄大于或等于该年龄的对象就可以直接进入老年代。</li>
+<li>空间分配担保：新生代采用的是复制收集算法，Eden和Survivor始终只是用其中一块内存区，当出现Minor GC后大部分对象仍然存活的话，就需要老年代进行分配担保，把Survivor区无法容纳的对象直接晋升到老年代。<ul>
+<li>Minor GC是否安全：在进行Minor GC之前，虚拟机会先检查老年代的最大可用连续空间是否大于新生代所有对象总空间，如果大于，则此次Minor GC是安全的；否则则要检查HandlePromotionFailure参数是否允许担保失败，如果允许，则会继续检查老年代的最大可用连续空间是否大于历次进入老年代的对象的平均大小，如果大于，则尝试进行一次Minor GC；如果小于，或者不允许担保失败，则进行一次Full GC；如果尝试进行的Minor GC失败了，也要进行一次Full GC。</li>
+</ul>
+</li>
+</ol>
+<blockquote>
+<p>新生代GC与老年代GC</p>
+<ul>
+<li>新生代GC（Minor GC / Young GC）：指发生在新生代的垃圾收集动作，Minor GC非常频繁，速度也比较快。</li>
+<li>老年代GC（Major GC / Full GC）：指发生在老年代的垃圾收集动作，出现了Major GC，经常会伴随至少一次Minor GC。Major GC的速度一般会比Minor GC慢10倍以上。</li>
+</ul>
+</blockquote>
 
       
     </div>
@@ -418,6 +457,12 @@
 
     <footer class="post-footer">
       
+        <div class="post-tags">
+          
+            <a href="/tags/java-jvm/" rel="tag"># java,jvm</a>
+          
+        </div>
+      
 
       
       
@@ -427,8 +472,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2018/05/07/the-difference-between-cluster-and-distributed/" rel="next" title="集群与分布式的区别">
-                <i class="fa fa-chevron-left"></i> 集群与分布式的区别
+              <a href="/2017/09/16/learning-jvm-2/" rel="next" title="深入理解Java虚拟机学习笔记（二）">
+                <i class="fa fa-chevron-left"></i> 深入理解Java虚拟机学习笔记（二）
               </a>
             
           </div>
@@ -436,6 +481,10 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/09/18/learning-jvm-4/" rel="prev" title="深入理解Java虚拟机学习笔记（四）">
+                深入理解Java虚拟机学习笔记（四） <i class="fa fa-chevron-right"></i>
+              </a>
             
           </div>
         </div>
@@ -589,7 +638,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#排查过程"><span class="nav-number">1.</span> <span class="nav-text">排查过程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#经验总结"><span class="nav-number">2.</span> <span class="nav-text">经验总结</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Hotspot-VM的实现"><span class="nav-number">1.</span> <span class="nav-text">Hotspot VM的实现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#垃圾收集器"><span class="nav-number">2.</span> <span class="nav-text">垃圾收集器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#内存分配与回收策略"><span class="nav-number">3.</span> <span class="nav-text">内存分配与回收策略</span></a></li></ol></div>
             
 
           </div>

@@ -98,29 +98,25 @@
 
 
 
-  <meta name="description" content="排查过程线上一台服务器从周一下午开始告警，告警内容为“Full GC比较频繁”。一开始大家都没有在意，猜想可能是部分业务压力有点大了，等高峰期过了就好了。 然而告警邮件的提醒一直响到了第二天。 周二中午，脆骨首先开始了排查，登录跳板机后，通过jstat工具查看GC情况，发现该应用的老年代占用100%，大约每5秒触发一次Full GC，但Full GC后没有效果，老年代占用依然为100%，据此我们推">
-<meta name="keywords" content="java,csharp,c,c++,program,php">
+  <meta name="description" content="集群两大关键特性集群指的是一组服务实体，它们共同工作以提供比单个服务实体更具可扩展性和可用性的服务平台。 在客户端看来，一个集群就像一个服务实体，但事实上，一个集群是由一组服务实体构成但。与单个服务实体相比，集群具有两大关键特性：  可扩展性：集群的性能不受单个服务实体的限制，可以通过动态添加新的服务实体的方式，提高集群的性能。 高可用性：集群通过冗余的服务实体来降低客户端停止服务的可能性。在集群">
+<meta name="keywords" content="分布式">
 <meta property="og:type" content="article">
-<meta property="og:title" content="记一次Full GC频繁排查过程">
-<meta property="og:url" content="https://fullgc.dev/2019/03/27/a-full-gc-investigation-report/index.html">
+<meta property="og:title" content="集群与分布式的区别">
+<meta property="og:url" content="https://fullgc.dev/2018/05/07/the-difference-between-cluster-and-distributed/index.html">
 <meta property="og:site_name" content="Full GC">
-<meta property="og:description" content="排查过程线上一台服务器从周一下午开始告警，告警内容为“Full GC比较频繁”。一开始大家都没有在意，猜想可能是部分业务压力有点大了，等高峰期过了就好了。 然而告警邮件的提醒一直响到了第二天。 周二中午，脆骨首先开始了排查，登录跳板机后，通过jstat工具查看GC情况，发现该应用的老年代占用100%，大约每5秒触发一次Full GC，但Full GC后没有效果，老年代占用依然为100%，据此我们推">
+<meta property="og:description" content="集群两大关键特性集群指的是一组服务实体，它们共同工作以提供比单个服务实体更具可扩展性和可用性的服务平台。 在客户端看来，一个集群就像一个服务实体，但事实上，一个集群是由一组服务实体构成但。与单个服务实体相比，集群具有两大关键特性：  可扩展性：集群的性能不受单个服务实体的限制，可以通过动态添加新的服务实体的方式，提高集群的性能。 高可用性：集群通过冗余的服务实体来降低客户端停止服务的可能性。在集群">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="https://fullgc.dev/images/WechatIMG599.png">
-<meta property="og:image" content="https://fullgc.dev/images/WechatIMG598.png">
-<meta property="og:image" content="https://fullgc.dev/images/WechatIMG600.png">
-<meta property="og:updated_time" content="2019-03-27T13:49:45.815Z">
+<meta property="og:updated_time" content="2019-03-27T13:48:12.482Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="记一次Full GC频繁排查过程">
-<meta name="twitter:description" content="排查过程线上一台服务器从周一下午开始告警，告警内容为“Full GC比较频繁”。一开始大家都没有在意，猜想可能是部分业务压力有点大了，等高峰期过了就好了。 然而告警邮件的提醒一直响到了第二天。 周二中午，脆骨首先开始了排查，登录跳板机后，通过jstat工具查看GC情况，发现该应用的老年代占用100%，大约每5秒触发一次Full GC，但Full GC后没有效果，老年代占用依然为100%，据此我们推">
-<meta name="twitter:image" content="https://fullgc.dev/images/WechatIMG599.png">
+<meta name="twitter:title" content="集群与分布式的区别">
+<meta name="twitter:description" content="集群两大关键特性集群指的是一组服务实体，它们共同工作以提供比单个服务实体更具可扩展性和可用性的服务平台。 在客户端看来，一个集群就像一个服务实体，但事实上，一个集群是由一组服务实体构成但。与单个服务实体相比，集群具有两大关键特性：  可扩展性：集群的性能不受单个服务实体的限制，可以通过动态添加新的服务实体的方式，提高集群的性能。 高可用性：集群通过冗余的服务实体来降低客户端停止服务的可能性。在集群">
 
 
 
 
 
 
-  <link rel="canonical" href="https://fullgc.dev/2019/03/27/a-full-gc-investigation-report/">
+  <link rel="canonical" href="https://fullgc.dev/2018/05/07/the-difference-between-cluster-and-distributed/">
 
 
 
@@ -130,7 +126,7 @@
   };
 </script>
 
-  <title>记一次Full GC频繁排查过程 | Full GC</title>
+  <title>集群与分布式的区别 | Full GC</title>
   
 
 
@@ -299,7 +295,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://fullgc.dev/2019/03/27/a-full-gc-investigation-report/">
+    <link itemprop="mainEntityOfPage" href="https://fullgc.dev/2018/05/07/the-difference-between-cluster-and-distributed/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Hans">
@@ -316,7 +312,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">记一次Full GC频繁排查过程
+          <h1 class="post-title" itemprop="name headline">集群与分布式的区别
 
               
             
@@ -342,12 +338,24 @@
                 
               
 
-              <time title="Created: 2019-03-27 20:04:04 / Modified: 21:49:45" itemprop="dateCreated datePublished" datetime="2019-03-27T20:04:04+08:00">2019-03-27</time>
+              <time title="Created: 2018-05-07 10:56:00" itemprop="dateCreated datePublished" datetime="2018-05-07T10:56:00+08:00">2018-05-07</time>
             
 
             
               
 
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2019-03-27 21:48:12" itemprop="dateModified" datetime="2019-03-27T21:48:12+08:00">2019-03-27</time>
               
             
           </span>
@@ -381,21 +389,30 @@
       
 
       
-        <h2 id="排查过程"><a href="#排查过程" class="headerlink" title="排查过程"></a>排查过程</h2><p>线上一台服务器从周一下午开始告警，告警内容为“Full GC比较频繁”。一开始大家都没有在意，猜想可能是部分业务压力有点大了，等高峰期过了就好了。</p>
-<p>然而告警邮件的提醒一直响到了第二天。</p>
-<p>周二中午，脆骨首先开始了排查，登录跳板机后，通过jstat工具查看GC情况，发现该应用的老年代占用100%，大约每5秒触发一次Full GC，但Full GC后没有效果，老年代占用依然为100%，据此我们推测应该是有大量业务对象滞留在了内存中。我们开始第一次尝试使用jmap来dump堆，以期通过分析堆中的对象来定位问题，然而第一次仅dump出18M的内容，分析后没有发现有价值的内容，考虑到老年代长期占用100%已经使得该应用无法正确响应线上请求了，我们重启了该应用，观察启动后的GC情况是正常的。</p>
-<p>周二晚上下班后，我和脆骨再次登录服务器排查该问题。21时11分，应用日志显示有一家店启动了某一类型的活动，接下来的几分钟里，应用的老年代占用率迅速上升，并导致开始频繁Full GC，告警邮件也再次出现。到此我们初步确定了问题是由该类型的活动导致的，并第二次使用jmap将堆dump出来进行分析，这次成功dump出4.3G的hprof文件。</p>
-<a id="more"></a>
-<p><img src="/images/WechatIMG599.png" alt="dump出的堆对象情况1"></p>
-<p><img src="/images/WechatIMG598.png" alt="dump出的堆对象情况2"></p>
-<p>在将dump出的hprof文件载入visualvm中之后，发现char数组占用了51.4%的堆空间，进一步分析发现有一个ArrayList存储了3174万个字符串，内容均为会员id。通过分析代码，我们发现有一段逻辑是需要从数据库中查询之前该活动已参与的对象，为了减轻数据库压力，开发通过循环分页查询来一页页地将数据查询出来，直到查询不到数据时跳出循环。在查询数据的代码中，我们发现周一有过一次代码变更，修改了传入查询语句的分页参数，更加深入地分析代码后，我们发现变更的分页参数并未赋值，其实际值总是为0，导致每次查询都是查第一页的数据，无法跳出循环，查询的结果又被缓存到一个ArrayList中，这才导致了老年代被填满，不断触发Full GC。</p>
-<p>在调整了查询数据的代码后，老年代占用恢复正常，Full GC也不再频繁出现。</p>
-<p><img src="/images/WechatIMG600.png" alt="full gc次数监控"></p>
-<h2 id="经验总结"><a href="#经验总结" class="headerlink" title="经验总结"></a>经验总结</h2><ol>
-<li>关键操作一定要充分单测；</li>
-<li>循环跳出条件如果依赖于数据库查询，对查询的语句和各个参数必须做到心中有数；</li>
-<li>流程测试，对每个流程将要出现的结果要有预期，并在测试完成后将实际结果与预期结果进行比对；</li>
-<li>线上告警要重视，对于应用的运行指标出现的异常要敏感，尽早定位问题，解决问题。</li>
+        <h2 id="集群"><a href="#集群" class="headerlink" title="集群"></a>集群</h2><h3 id="两大关键特性"><a href="#两大关键特性" class="headerlink" title="两大关键特性"></a>两大关键特性</h3><p>集群指的是一组服务实体，它们共同工作以提供比单个服务实体更具可扩展性和可用性的服务平台。</p>
+<p>在客户端看来，一个集群就像一个服务实体，但事实上，一个集群是由一组服务实体构成但。与单个服务实体相比，集群具有两大关键特性：</p>
+<ul>
+<li>可扩展性：集群的性能不受单个服务实体的限制，可以通过动态添加新的服务实体的方式，提高集群的性能。</li>
+<li>高可用性：集群通过冗余的服务实体来降低客户端停止服务的可能性。在集群中，多个服务实体可以提供相同的服务，如果单个服务实体故障，其他服务实体将接替故障的服务实体提供服务。集群提供的将服务从故障中快速恢复的能力增强了应用程序的可用性。</li>
+</ul>
+<h3 id="两大能力"><a href="#两大能力" class="headerlink" title="两大能力"></a>两大能力</h3><p>为了达到可扩展性和高可用性的目标，集群必须具备两大能力：</p>
+<ul>
+<li>负载均衡：负载均衡可以平均分配任务到集群中的计算资源和网络资源上。</li>
+<li>错误恢复：当一个服务实体由于某种原因执行任务失败时，该任务可以由集群中的另一个服务实体执行并完成。由于一个服务实体故障无法完成任务，因此在另一个服务实体中透明地继续执行任务的过程称为错误恢复。</li>
+</ul>
+<h3 id="两大技术："><a href="#两大技术：" class="headerlink" title="两大技术："></a>两大技术：</h3><p>实现集群服务需要两大技术：</p>
+<ul>
+<li>集群地址：集群由多个服务实体组成，客户端通过访问集群的集群地址来获取集群内的各个服务实体提供的功能。拥有单个集群地址时集群的一个基本特征。维护集群地址的工具称为负载均衡器。负载均衡器的职责是管理每个服务实体的上线与下线，并负责将集群地址转换为内部服务实体地址。有些负载均衡器实现了真正的负载均衡算法，有些只支持任务转换。只实现了任务转换的负载均衡器适用于支持ACTIVE-STANDBY的集群环境，在这种集群中，只有一个服务实体工作，当正在工作的服务实体发生故障时，负载均衡器把后来的任务转发给另外一个服务实体。</li>
+<li>内部通信：为了能协同工作，实现负载均衡和错误恢复，集群中的各实体间必须时常通信，比如负载均衡器对服务实体进行心跳测试，服务实体间交换任务执行上下文信息。</li>
+</ul>
+<p>通过单个集群地址，客户端可以访问集群提供的计算服务。集群地址隐藏了各个服务实体的内部地址，这样客户端需求的计算服务就可以分布在不同的服务实体上。内部通信是集群正常工作的基础，它使得集群得以拥有均衡的负载和错误恢复的能力。</p>
+<h2 id="分布式"><a href="#分布式" class="headerlink" title="分布式"></a>分布式</h2><p>分布式指的是将不同的服务模块部署在多个不同的服务器上，并通过远程调用来提供对外服务以协同工作。</p>
+<p>对应用程序和服务进行分层和拆分，并以分布式的方式部署应用程序和服务模块。</p>
+<p>分布式不仅可以提高并发访问能力，并且还减少来数据库连接和资源消耗。分布式还使得不同的应用程序可以复用公共服务，让业务扩展变得容易。</p>
+<h2 id="区别"><a href="#区别" class="headerlink" title="区别"></a>区别</h2><p>简单来说，分布式系统是并联工作的，而集群是串联工作的。</p>
+<ol>
+<li>分布式指的是将不同业务分布到不同的地方，而集群指的是关联多个服务器来实现相同的业务。每个分布式节点都可以做成集群，而集群不一定是分布式的。举例来说，Facebook为了承载更多用户访问，可以做一个集群。设置一台响应服务器和多台处理相同业务的服务器，当业务访问进来时，响应服务器会找一台负载较低的服务器去处理。而分布式系统则完全不同，它的组织是松散的，它与集群完全不同，集群中的一台服务器故障了，另一台可以顶上。分布式系统中的各个节点处理的业务是不同的，如果一个节点故障了，该节点提供的服务就不再可用了。</li>
+<li>分布式系统通过降低单个任务的执行时间的方式来提高效率，而集群则通过增加单位时间内可以同时执行的任务数量来提高效率。举例来说，如果一个任务由10个子任务组成，每个子任务需要分别执行1小时，所以该任务在单台服务器上需要10个小时才能完成。使用分布式系统解决方案，使用10台服务器，在不考虑任务间的依赖的情况下，每台服务器只负责执行1个子任务，只需要1个小时即可完成任务。集群方案同样使用10台服务器，每台服务器可以独立地处理任务。假设10个任务同时到达，10台服务器将同时开始工作，1小时后，10个任务同时完成，同样花了1小时完成了任务。</li>
 </ol>
 
       
@@ -418,6 +435,12 @@
 
     <footer class="post-footer">
       
+        <div class="post-tags">
+          
+            <a href="/tags/分布式/" rel="tag"># 分布式</a>
+          
+        </div>
+      
 
       
       
@@ -427,8 +450,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2018/05/07/the-difference-between-cluster-and-distributed/" rel="next" title="集群与分布式的区别">
-                <i class="fa fa-chevron-left"></i> 集群与分布式的区别
+              <a href="/2018/02/18/distributed-consistency/" rel="next" title="分布式一致性协议">
+                <i class="fa fa-chevron-left"></i> 分布式一致性协议
               </a>
             
           </div>
@@ -436,6 +459,10 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/03/27/a-full-gc-investigation-report/" rel="prev" title="记一次Full GC频繁排查过程">
+                记一次Full GC频繁排查过程 <i class="fa fa-chevron-right"></i>
+              </a>
             
           </div>
         </div>
@@ -589,7 +616,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#排查过程"><span class="nav-number">1.</span> <span class="nav-text">排查过程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#经验总结"><span class="nav-number">2.</span> <span class="nav-text">经验总结</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#集群"><span class="nav-number">1.</span> <span class="nav-text">集群</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#两大关键特性"><span class="nav-number">1.1.</span> <span class="nav-text">两大关键特性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#两大能力"><span class="nav-number">1.2.</span> <span class="nav-text">两大能力</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#两大技术："><span class="nav-number">1.3.</span> <span class="nav-text">两大技术：</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#分布式"><span class="nav-number">2.</span> <span class="nav-text">分布式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#区别"><span class="nav-number">3.</span> <span class="nav-text">区别</span></a></li></ol></div>
             
 
           </div>

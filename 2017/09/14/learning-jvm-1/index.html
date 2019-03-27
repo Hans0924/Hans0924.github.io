@@ -98,29 +98,25 @@
 
 
 
-  <meta name="description" content="排查过程线上一台服务器从周一下午开始告警，告警内容为“Full GC比较频繁”。一开始大家都没有在意，猜想可能是部分业务压力有点大了，等高峰期过了就好了。 然而告警邮件的提醒一直响到了第二天。 周二中午，脆骨首先开始了排查，登录跳板机后，通过jstat工具查看GC情况，发现该应用的老年代占用100%，大约每5秒触发一次Full GC，但Full GC后没有效果，老年代占用依然为100%，据此我们推">
-<meta name="keywords" content="java,csharp,c,c++,program,php">
+  <meta name="description" content="内存区域与内存溢出异常运行时数据区域 程序计数器：线程私有，负责指令跳转，执行Java方法时记录虚拟机字节码指令地址，执行Native方法时为空。 虚拟机栈：线程私有，存储栈帧。 栈帧：方法运行时的基础数据结构，方法执行时创建，用于存储局部变量表，操作数栈，动态链接，方法出口等信息。 局部变量表：由若干个局部变量空间（Slot）组成，存放编译器可知的基本数据类型，对象的引用和返回地址类型，其中64">
+<meta name="keywords" content="java,jvm">
 <meta property="og:type" content="article">
-<meta property="og:title" content="记一次Full GC频繁排查过程">
-<meta property="og:url" content="https://fullgc.dev/2019/03/27/a-full-gc-investigation-report/index.html">
+<meta property="og:title" content="深入理解Java虚拟机学习笔记（一）">
+<meta property="og:url" content="https://fullgc.dev/2017/09/14/learning-jvm-1/index.html">
 <meta property="og:site_name" content="Full GC">
-<meta property="og:description" content="排查过程线上一台服务器从周一下午开始告警，告警内容为“Full GC比较频繁”。一开始大家都没有在意，猜想可能是部分业务压力有点大了，等高峰期过了就好了。 然而告警邮件的提醒一直响到了第二天。 周二中午，脆骨首先开始了排查，登录跳板机后，通过jstat工具查看GC情况，发现该应用的老年代占用100%，大约每5秒触发一次Full GC，但Full GC后没有效果，老年代占用依然为100%，据此我们推">
+<meta property="og:description" content="内存区域与内存溢出异常运行时数据区域 程序计数器：线程私有，负责指令跳转，执行Java方法时记录虚拟机字节码指令地址，执行Native方法时为空。 虚拟机栈：线程私有，存储栈帧。 栈帧：方法运行时的基础数据结构，方法执行时创建，用于存储局部变量表，操作数栈，动态链接，方法出口等信息。 局部变量表：由若干个局部变量空间（Slot）组成，存放编译器可知的基本数据类型，对象的引用和返回地址类型，其中64">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="https://fullgc.dev/images/WechatIMG599.png">
-<meta property="og:image" content="https://fullgc.dev/images/WechatIMG598.png">
-<meta property="og:image" content="https://fullgc.dev/images/WechatIMG600.png">
-<meta property="og:updated_time" content="2019-03-27T13:49:45.815Z">
+<meta property="og:updated_time" content="2019-03-27T13:50:04.469Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="记一次Full GC频繁排查过程">
-<meta name="twitter:description" content="排查过程线上一台服务器从周一下午开始告警，告警内容为“Full GC比较频繁”。一开始大家都没有在意，猜想可能是部分业务压力有点大了，等高峰期过了就好了。 然而告警邮件的提醒一直响到了第二天。 周二中午，脆骨首先开始了排查，登录跳板机后，通过jstat工具查看GC情况，发现该应用的老年代占用100%，大约每5秒触发一次Full GC，但Full GC后没有效果，老年代占用依然为100%，据此我们推">
-<meta name="twitter:image" content="https://fullgc.dev/images/WechatIMG599.png">
+<meta name="twitter:title" content="深入理解Java虚拟机学习笔记（一）">
+<meta name="twitter:description" content="内存区域与内存溢出异常运行时数据区域 程序计数器：线程私有，负责指令跳转，执行Java方法时记录虚拟机字节码指令地址，执行Native方法时为空。 虚拟机栈：线程私有，存储栈帧。 栈帧：方法运行时的基础数据结构，方法执行时创建，用于存储局部变量表，操作数栈，动态链接，方法出口等信息。 局部变量表：由若干个局部变量空间（Slot）组成，存放编译器可知的基本数据类型，对象的引用和返回地址类型，其中64">
 
 
 
 
 
 
-  <link rel="canonical" href="https://fullgc.dev/2019/03/27/a-full-gc-investigation-report/">
+  <link rel="canonical" href="https://fullgc.dev/2017/09/14/learning-jvm-1/">
 
 
 
@@ -130,7 +126,7 @@
   };
 </script>
 
-  <title>记一次Full GC频繁排查过程 | Full GC</title>
+  <title>深入理解Java虚拟机学习笔记（一） | Full GC</title>
   
 
 
@@ -299,7 +295,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://fullgc.dev/2019/03/27/a-full-gc-investigation-report/">
+    <link itemprop="mainEntityOfPage" href="https://fullgc.dev/2017/09/14/learning-jvm-1/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Hans">
@@ -316,7 +312,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">记一次Full GC频繁排查过程
+          <h1 class="post-title" itemprop="name headline">深入理解Java虚拟机学习笔记（一）
 
               
             
@@ -342,12 +338,24 @@
                 
               
 
-              <time title="Created: 2019-03-27 20:04:04 / Modified: 21:49:45" itemprop="dateCreated datePublished" datetime="2019-03-27T20:04:04+08:00">2019-03-27</time>
+              <time title="Created: 2017-09-14 10:00:00" itemprop="dateCreated datePublished" datetime="2017-09-14T10:00:00+08:00">2017-09-14</time>
             
 
             
               
 
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2019-03-27 21:50:04" itemprop="dateModified" datetime="2019-03-27T21:50:04+08:00">2019-03-27</time>
               
             
           </span>
@@ -381,21 +389,69 @@
       
 
       
-        <h2 id="排查过程"><a href="#排查过程" class="headerlink" title="排查过程"></a>排查过程</h2><p>线上一台服务器从周一下午开始告警，告警内容为“Full GC比较频繁”。一开始大家都没有在意，猜想可能是部分业务压力有点大了，等高峰期过了就好了。</p>
-<p>然而告警邮件的提醒一直响到了第二天。</p>
-<p>周二中午，脆骨首先开始了排查，登录跳板机后，通过jstat工具查看GC情况，发现该应用的老年代占用100%，大约每5秒触发一次Full GC，但Full GC后没有效果，老年代占用依然为100%，据此我们推测应该是有大量业务对象滞留在了内存中。我们开始第一次尝试使用jmap来dump堆，以期通过分析堆中的对象来定位问题，然而第一次仅dump出18M的内容，分析后没有发现有价值的内容，考虑到老年代长期占用100%已经使得该应用无法正确响应线上请求了，我们重启了该应用，观察启动后的GC情况是正常的。</p>
-<p>周二晚上下班后，我和脆骨再次登录服务器排查该问题。21时11分，应用日志显示有一家店启动了某一类型的活动，接下来的几分钟里，应用的老年代占用率迅速上升，并导致开始频繁Full GC，告警邮件也再次出现。到此我们初步确定了问题是由该类型的活动导致的，并第二次使用jmap将堆dump出来进行分析，这次成功dump出4.3G的hprof文件。</p>
+        <h2 id="内存区域与内存溢出异常"><a href="#内存区域与内存溢出异常" class="headerlink" title="内存区域与内存溢出异常"></a>内存区域与内存溢出异常</h2><h3 id="运行时数据区域"><a href="#运行时数据区域" class="headerlink" title="运行时数据区域"></a>运行时数据区域</h3><ol>
+<li>程序计数器：线程私有，负责指令跳转，执行Java方法时记录虚拟机字节码指令地址，执行Native方法时为空。</li>
+<li>虚拟机栈：线程私有，存储栈帧。<ul>
+<li>栈帧：方法运行时的基础数据结构，方法执行时创建，用于存储局部变量表，操作数栈，动态链接，方法出口等信息。</li>
+<li>局部变量表：由若干个局部变量空间（Slot）组成，存放编译器可知的基本数据类型，对象的引用和返回地址类型，其中64位整数long和浮点数double的数据会占用2个空间（Slot），其余数据类型只占用一个。局部变量表的内存空间是在编译时完成分配的，在方法运行期间不会发生改变。</li>
+</ul>
+</li>
+<li>本地方法栈：规范中无强制规定，在Hotspot VM中与虚拟机栈合二为一。</li>
+<li>堆：线程共享，虚拟机启动时创建，存放对象实例。也叫GC堆。</li>
+<li>方法区：线程共享，存放虚拟机加载的类，常量，静态变量，JIT编译后的代码等数据。</li>
+<li>运行时常量池：方法区的一部分，存放编译期生成的各种字面量和符号引用。</li>
+<li>直接内存：<strong>不属于</strong>运行时数据区域，通过NIO类通过Native函数库直接分配堆外内存。</li>
+</ol>
 <a id="more"></a>
-<p><img src="/images/WechatIMG599.png" alt="dump出的堆对象情况1"></p>
-<p><img src="/images/WechatIMG598.png" alt="dump出的堆对象情况2"></p>
-<p>在将dump出的hprof文件载入visualvm中之后，发现char数组占用了51.4%的堆空间，进一步分析发现有一个ArrayList存储了3174万个字符串，内容均为会员id。通过分析代码，我们发现有一段逻辑是需要从数据库中查询之前该活动已参与的对象，为了减轻数据库压力，开发通过循环分页查询来一页页地将数据查询出来，直到查询不到数据时跳出循环。在查询数据的代码中，我们发现周一有过一次代码变更，修改了传入查询语句的分页参数，更加深入地分析代码后，我们发现变更的分页参数并未赋值，其实际值总是为0，导致每次查询都是查第一页的数据，无法跳出循环，查询的结果又被缓存到一个ArrayList中，这才导致了老年代被填满，不断触发Full GC。</p>
-<p>在调整了查询数据的代码后，老年代占用恢复正常，Full GC也不再频繁出现。</p>
-<p><img src="/images/WechatIMG600.png" alt="full gc次数监控"></p>
-<h2 id="经验总结"><a href="#经验总结" class="headerlink" title="经验总结"></a>经验总结</h2><ol>
-<li>关键操作一定要充分单测；</li>
-<li>循环跳出条件如果依赖于数据库查询，对查询的语句和各个参数必须做到心中有数；</li>
-<li>流程测试，对每个流程将要出现的结果要有预期，并在测试完成后将实际结果与预期结果进行比对；</li>
-<li>线上告警要重视，对于应用的运行指标出现的异常要敏感，尽早定位问题，解决问题。</li>
+<h3 id="运行时内存溢出异常"><a href="#运行时内存溢出异常" class="headerlink" title="运行时内存溢出异常"></a>运行时内存溢出异常</h3><ol>
+<li>程序计数器：无</li>
+<li>虚拟机栈：<ul>
+<li>StackOverflowError: 线程请求的栈深度大于虚拟机所允许的最大深度。</li>
+<li>OutOfMemoryError：如果虚拟机栈可以动态扩展，而线程无法申请到足够的内存。</li>
+</ul>
+</li>
+<li>本地方法栈：与虚拟机栈相同。</li>
+<li>堆：<ul>
+<li>OutOfMemoryError：如果堆中没有足够的内存来完成实例分配，并且堆也无法进行扩展。</li>
+</ul>
+</li>
+<li>方法区：<ul>
+<li>OutOfMemoryError：如果方法区中没有足够的内存来完成实例分配，并且方法区也无法进行扩展。</li>
+</ul>
+</li>
+<li>运行时常量池：与方法区相同。</li>
+<li>直接内存：<ul>
+<li>OutOfMemoryError：动态扩展时，超出了物理内存或操作系统的限制。</li>
+</ul>
+</li>
+</ol>
+<h2 id="虚拟机对象"><a href="#虚拟机对象" class="headerlink" title="虚拟机对象"></a>虚拟机对象</h2><h3 id="对象的创建"><a href="#对象的创建" class="headerlink" title="对象的创建"></a>对象的创建</h3><ol>
+<li>类加载检查</li>
+<li>分配内存<ul>
+<li>指针碰撞</li>
+<li>空闲列表</li>
+</ul>
+</li>
+<li>初始化对象为零值</li>
+<li>设置对象头</li>
+<li>调用构造方法</li>
+</ol>
+<h3 id="对象的内存布局"><a href="#对象的内存布局" class="headerlink" title="对象的内存布局"></a>对象的内存布局</h3><ol>
+<li>对象头<ul>
+<li>运行时数据(Mark Word)：HashCode，GC分代年龄，锁状态标志，线程持有的锁，偏向线程ID，偏向时间戳等。</li>
+<li>类型指针：指向对象的类元数据，虚拟机通过这个指针判断对象是哪个类的实例。</li>
+<li>数组长度：记录数组的长度。</li>
+</ul>
+</li>
+<li>实例数据<ul>
+<li>存储顺序：受虚拟机分配策略参数（FieldAllocationStyle）和字段定义顺序影响，Hotspot VM的默认顺序为：longs/doubles, ints, shorts/chars, bytes/booleans, oops(Ordinary Object Pointers)，即相同长度字段被分配在一起，除此之外，父类成员总是在子类成员之前。若CompactFields参数为true，则子类中长度较小的字段也可能被插入到父类字段的间隙中。</li>
+</ul>
+</li>
+<li>对齐填充：不一定存在，起占位填充的作用。Hotspot VM中的自动内存管理系统要求对象的起始地址必须是8的整数倍，也就是对象的大小必须是8的整数倍，而对象头部分正好是8字节的倍数，所以实例数据部分不对齐时需要通过对齐填充来补全。</li>
+</ol>
+<h3 id="对象的访问定位"><a href="#对象的访问定位" class="headerlink" title="对象的访问定位"></a>对象的访问定位</h3><ol>
+<li>句柄：需要在堆中划分一块区域来存储句柄池，虚拟机栈中的局部变量表中的对象引用存储的就是对象的句柄地址，而句柄中包含了对象实例数据与类型数据各自的地址信息。优点：对象引用存储的地址是稳定的，在对象被移动（如GC时）只需要改变句柄中的实例数据的地址。</li>
+<li>直接指针：需要在堆中存放对象的类型数据信息，而对象引用存储的是直接指向对象的地址。优点：速度快，节省了一次指针定位的开销。<strong>Hotspot VM采用本方法进行对象访问定位</strong>。</li>
 </ol>
 
       
@@ -418,6 +474,12 @@
 
     <footer class="post-footer">
       
+        <div class="post-tags">
+          
+            <a href="/tags/java-jvm/" rel="tag"># java,jvm</a>
+          
+        </div>
+      
 
       
       
@@ -427,8 +489,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2018/05/07/the-difference-between-cluster-and-distributed/" rel="next" title="集群与分布式的区别">
-                <i class="fa fa-chevron-left"></i> 集群与分布式的区别
+              <a href="/2016/01/31/salted-password-hashing-do-it-right/" rel="next" title="【译】正确使用密码加盐散列">
+                <i class="fa fa-chevron-left"></i> 【译】正确使用密码加盐散列
               </a>
             
           </div>
@@ -436,6 +498,10 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/09/16/learning-jvm-2/" rel="prev" title="深入理解Java虚拟机学习笔记（二）">
+                深入理解Java虚拟机学习笔记（二） <i class="fa fa-chevron-right"></i>
+              </a>
             
           </div>
         </div>
@@ -589,7 +655,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#排查过程"><span class="nav-number">1.</span> <span class="nav-text">排查过程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#经验总结"><span class="nav-number">2.</span> <span class="nav-text">经验总结</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#内存区域与内存溢出异常"><span class="nav-number">1.</span> <span class="nav-text">内存区域与内存溢出异常</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#运行时数据区域"><span class="nav-number">1.1.</span> <span class="nav-text">运行时数据区域</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#运行时内存溢出异常"><span class="nav-number">1.2.</span> <span class="nav-text">运行时内存溢出异常</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#虚拟机对象"><span class="nav-number">2.</span> <span class="nav-text">虚拟机对象</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#对象的创建"><span class="nav-number">2.1.</span> <span class="nav-text">对象的创建</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#对象的内存布局"><span class="nav-number">2.2.</span> <span class="nav-text">对象的内存布局</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#对象的访问定位"><span class="nav-number">2.3.</span> <span class="nav-text">对象的访问定位</span></a></li></ol></li></ol></div>
             
 
           </div>

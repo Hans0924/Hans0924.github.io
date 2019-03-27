@@ -98,21 +98,25 @@
 
 
 
-  <meta name="keywords" content="java,csharp,c,c++,program,php">
-<meta property="og:type" content="website">
-<meta property="og:title" content="Full GC">
-<meta property="og:url" content="https://fullgc.dev/index.html">
+  <meta name="description" content="如果你是一个 web 开发工程师，可能你已经建立了一个用户账户系统。一个用户账户系统最重要的部分是如何保护密码。用户账户数据库经常被黑，如果你的网站曾经被攻击过，你绝对必须做点什么来保护你的用户的密码。最好的用来保护密码的方式是采用加盐密码散列 (salted password hasing)。 本文将解释为什么要这样做。 互联网上充斥着大量的误导信息，有许许多多的关于如何正确做密码散列的矛盾的观">
+<meta name="keywords" content="java,csharp,c,c++,program,php">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【译】正确使用密码加盐散列">
+<meta property="og:url" content="https://fullgc.dev/2016/01/31/salted-password-hashing-do-it-right/index.html">
 <meta property="og:site_name" content="Full GC">
+<meta property="og:description" content="如果你是一个 web 开发工程师，可能你已经建立了一个用户账户系统。一个用户账户系统最重要的部分是如何保护密码。用户账户数据库经常被黑，如果你的网站曾经被攻击过，你绝对必须做点什么来保护你的用户的密码。最好的用来保护密码的方式是采用加盐密码散列 (salted password hasing)。 本文将解释为什么要这样做。 互联网上充斥着大量的误导信息，有许许多多的关于如何正确做密码散列的矛盾的观">
 <meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-03-27T13:13:32.625Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Full GC">
+<meta name="twitter:title" content="【译】正确使用密码加盐散列">
+<meta name="twitter:description" content="如果你是一个 web 开发工程师，可能你已经建立了一个用户账户系统。一个用户账户系统最重要的部分是如何保护密码。用户账户数据库经常被黑，如果你的网站曾经被攻击过，你绝对必须做点什么来保护你的用户的密码。最好的用来保护密码的方式是采用加盐密码散列 (salted password hasing)。 本文将解释为什么要这样做。 互联网上充斥着大量的误导信息，有许许多多的关于如何正确做密码散列的矛盾的观">
 
 
 
 
 
 
-  <link rel="canonical" href="https://fullgc.dev/">
+  <link rel="canonical" href="https://fullgc.dev/2016/01/31/salted-password-hashing-do-it-right/">
 
 
 
@@ -122,7 +126,7 @@
   };
 </script>
 
-  <title>Full GC</title>
+  <title>【译】正确使用密码加盐散列 | Full GC</title>
   
 
 
@@ -170,8 +174,7 @@
     
   
 
-  <div class="container sidebar-position-left 
-  page-home">
+  <div class="container sidebar-position-left page-post-detail">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -213,7 +216,7 @@
         
         
           
-          <li class="menu-item menu-item-home menu-item-active">
+          <li class="menu-item menu-item-home">
 
     
     
@@ -275,166 +278,9 @@
           
           <div id="content" class="content">
             
-  <section id="posts" class="posts-expand">
+
+  <div id="posts" class="posts-expand">
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://fullgc.dev/2019/03/27/a-full-gc-investigation-report/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Hans">
-      <meta itemprop="description" content>
-      <meta itemprop="image" content="/uploads/avatar.png">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Full GC">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/03/27/a-full-gc-investigation-report/" class="post-title-link" itemprop="url">记一次Full GC频繁排查过程</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-
-              
-                
-              
-
-              <time title="Created: 2019-03-27 20:04:04 / Modified: 21:01:20" itemprop="dateCreated datePublished" datetime="2019-03-27T20:04:04+08:00">2019-03-27</time>
-            
-
-            
-              
-
-              
-            
-          </span>
-
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="排查过程"><a href="#排查过程" class="headerlink" title="排查过程"></a>排查过程</h2><p>线上一台服务器从周一下午开始告警，告警内容为“Full GC比较频繁”。一开始大家都没有在意，猜想可能是部分业务压力有点大了，等高峰期过了就好了。</p>
-<p>然而告警邮件的提醒一直响到了第二天。</p>
-<p>周二中午，脆骨首先开始了排查，登录跳板机后，通过jstat工具查看GC情况，发现该应用的老年代占用100%，大约每5秒触发一次Full GC，但Full GC后没有效果，老年代占用依然为100%，据此我们推测应该是有大量业务对象滞留在了内存中。我们开始第一次尝试使用jmap来dump堆，以期通过分析堆中的对象来定位问题，然而第一次仅dump出18M的内容，分析后没有发现有价值的内容，考虑到老年代长期占用100%已经使得该应用无法正确响应线上请求了，我们重启了该应用，观察启动后的GC情况是正常的。</p>
-<p>周二晚上下班后，我和脆骨再次登录服务器排查该问题。21时11分，应用日志显示有一家店启动了某一类型的活动，接下来的几分钟里，应用的老年代占用率迅速上升，并导致开始频繁Full GC，告警邮件也再次出现。到此我们初步确定了问题是由该类型的活动导致的，并第二次使用jmap将堆dump出来进行分析，这次成功dump出4.3G的hprof文件。</p>
-<p><img src="/images/WechatIMG599.png" alt="dump出的堆对象情况1"></p>
-<p><img src="/images/WechatIMG598.png" alt="dump出的堆对象情况2"></p>
-<p>在将dump出的hprof文件载入visualvm中之后，发现char数组占用了51.4%的堆空间，进一步分析发现有一个ArrayList存储了3174万个字符串，内容均为会员id。通过分析代码，我们发现有一段逻辑是需要从数据库中查询之前该活动已参与的对象，为了减轻数据库压力，开发通过循环分页查询来一页页地将数据查询出来，直到查询不到数据时跳出循环。在查询数据的代码中，我们发现周一有过一次代码变更，修改了传入查询语句的分页参数，更加深入地分析代码后，我们发现变更的分页参数并未赋值，其实际值总是为0，导致每次查询都是查第一页的数据，无法跳出循环，查询的结果又被缓存到一个ArrayList中，这才导致了老年代被填满，不断触发Full GC。</p>
-<p>在调整了查询数据的代码后，老年代占用恢复正常，Full GC也不再频繁出现。</p>
-<p><img src="/images/WechatIMG600.png" alt="full gc次数监控"></p>
-<h2 id="经验总结"><a href="#经验总结" class="headerlink" title="经验总结"></a>经验总结</h2><ol>
-<li>关键操作一定要充分单测；</li>
-<li>循环跳出条件如果依赖于数据库查询，对查询的语句和各个参数必须做到心中有数；</li>
-<li>流程测试，对每个流程将要出现的结果要有预期，并在测试完成后将实际结果与预期结果进行比对；</li>
-<li>线上告警要重视，对于应用的运行指标出现的异常要敏感，尽早定位问题，解决问题。</li>
-</ol>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
 
   
 
@@ -466,10 +312,8 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2016/01/31/salted-password-hashing-do-it-right/" class="post-title-link" itemprop="url">【译】正确使用密码加盐散列</a>
+          <h1 class="post-title" itemprop="name headline">【译】正确使用密码加盐散列
+
               
             
           </h1>
@@ -545,9 +389,7 @@
       
 
       
-        
-          
-            <p>如果你是一个 web 开发工程师，可能你已经建立了一个用户账户系统。一个用户账户系统最重要的部分是如何保护密码。用户账户数据库经常被黑，如果你的网站曾经被攻击过，你绝对必须做点什么来保护你的用户的密码。最好的用来保护密码的方式是采用加盐密码散列 (salted password hasing)。 本文将解释为什么要这样做。</p>
+        <p>如果你是一个 web 开发工程师，可能你已经建立了一个用户账户系统。一个用户账户系统最重要的部分是如何保护密码。用户账户数据库经常被黑，如果你的网站曾经被攻击过，你绝对必须做点什么来保护你的用户的密码。最好的用来保护密码的方式是采用加盐密码散列 (salted password hasing)。 本文将解释为什么要这样做。</p>
 <p>互联网上充斥着大量的误导信息，有许许多多的关于如何正确做密码散列的矛盾的观点，有些甚至是误解。密码散列是一个简单的事情，但是仍然有很多人做错了。在这篇文章中，我不仅将解释正确实现的方式，而且告诉你为什么这样做。</p>
 <p>重要提示：如果你正在试图自己编码实现密码散列，请停下来！它太容易搞糟了。不，不，不，你在大学上的密码学课程不能让你避免这个警告。这个警告适用于每个人：不要实现自己的加密！如何保存密码的问题已经被解决了。使用 phpass 或者本文后面提供的代码。</p>
 <p>如果因为什么原因你没有阅读上面的警告，请现在立即去读一遍。真的，本文不是教你如何实现自己的密码存储系统，而是解释为什么密码应该这样存储。</p>
@@ -700,8 +542,6 @@
 <p>文章和代码都是 <a href="https://defuse.ca/" target="_blank" rel="noopener">Defuse Security</a> 所著。</p>
 <p>原文： <a href="https://crackstation.net/hashing-security.htm" target="_blank" rel="noopener">Salted Password Hashing - Doing it Right</a><br>转自：<a href="http://blog.sibo.me/2014/05/14/hashing-security.html" target="_blank" rel="noopener">正确使用密码加盐散列[译]</a></p>
 
-          
-        
       
     </div>
 
@@ -724,12 +564,28 @@
       
 
       
+      
+      
 
       
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/03/27/a-full-gc-investigation-report/" rel="prev" title="记一次Full GC频繁排查过程">
+                记一次Full GC频繁排查过程 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
 
       
-      
-        <div class="post-eof"></div>
       
     </footer>
   </div>
@@ -739,14 +595,15 @@
   </article>
 
 
-    
-  </section>
-
-  
+  </div>
 
 
           </div>
           
+
+  
+
+
 
         </div>
         
@@ -766,8 +623,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
 
-      <div class="site-overview-wrap sidebar-panel sidebar-panel-active">
+      <div class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
@@ -839,6 +705,23 @@
         </div>
       </div>
 
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#攻击散列的方法"><span class="nav-number">1.</span> <span class="nav-text">攻击散列的方法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#词典和暴力攻击"><span class="nav-number">1.1.</span> <span class="nav-text">词典和暴力攻击</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#查表攻击"><span class="nav-number">1.2.</span> <span class="nav-text">查表攻击</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#反向查表攻击"><span class="nav-number">1.3.</span> <span class="nav-text">反向查表攻击</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#彩虹表攻击"><span class="nav-number">1.4.</span> <span class="nav-text">彩虹表攻击</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#加盐"><span class="nav-number">2.</span> <span class="nav-text">加盐</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#错误的方式：短的-salt-和重用-salt"><span class="nav-number">3.</span> <span class="nav-text">错误的方式：短的 salt 和重用 salt</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#重用-salt"><span class="nav-number">3.1.</span> <span class="nav-text">重用 salt</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#过短-salt"><span class="nav-number">3.2.</span> <span class="nav-text">过短 salt</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#错误的方式：双重-hash-和古怪的-hash-算法"><span class="nav-number">4.</span> <span class="nav-text">错误的方式：双重 hash 和古怪的 hash 算法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Hash-碰撞"><span class="nav-number">5.</span> <span class="nav-text">Hash 碰撞</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#正确的方式：怎样正确地计算-hash"><span class="nav-number">6.</span> <span class="nav-text">正确的方式：怎样正确地计算 hash</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#最基本的：加盐散列"><span class="nav-number">6.1.</span> <span class="nav-text">最基本的：加盐散列</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#存储密码："><span class="nav-number">6.2.</span> <span class="nav-text">存储密码：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#验证密码："><span class="nav-number">6.3.</span> <span class="nav-text">验证密码：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#在-web-应用中，永远在服务器计算-hash-。"><span class="nav-number">6.4.</span> <span class="nav-text">在 web 应用中，永远在服务器计算 hash 。</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#让破解密码更难：减慢-hash-速度"><span class="nav-number">6.5.</span> <span class="nav-text">让破解密码更难：减慢 hash 速度</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#不可能被攻破的-hash：密钥-hash-和密码硬件-hash"><span class="nav-number">6.6.</span> <span class="nav-text">不可能被攻破的 hash：密钥 hash 和密码硬件 hash</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#其他安全措施"><span class="nav-number">7.</span> <span class="nav-text">其他安全措施</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#常见问题"><span class="nav-number">8.</span> <span class="nav-text">常见问题</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#我应该使用什么-hash-算法"><span class="nav-number">8.1.</span> <span class="nav-text">我应该使用什么 hash 算法</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#使用："><span class="nav-number">8.1.1.</span> <span class="nav-text">使用：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#不要使用："><span class="nav-number">8.1.2.</span> <span class="nav-text">不要使用：</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#如果用户忘记了密码，我应该怎样让他们重置？"><span class="nav-number">8.2.</span> <span class="nav-text">如果用户忘记了密码，我应该怎样让他们重置？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#如果我的用户账户数据库泄漏或者被黑了我应该怎么做？"><span class="nav-number">8.3.</span> <span class="nav-text">如果我的用户账户数据库泄漏或者被黑了我应该怎么做？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#如何设置我的密码策略？我应该强制用户使用强密码吗？"><span class="nav-number">8.4.</span> <span class="nav-text">如何设置我的密码策略？我应该强制用户使用强密码吗？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#如果攻击者已经访问了我的数据库，他们不能使用它们自己的-hash-替代我的密码-hash-然后登录吗？"><span class="nav-number">8.5.</span> <span class="nav-text">如果攻击者已经访问了我的数据库，他们不能使用它们自己的 hash 替代我的密码 hash 然后登录吗？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#为什么我应该使用特殊的算法例如-HMAC-？为什么我不能直接把密码附加到密钥后面呢？"><span class="nav-number">8.6.</span> <span class="nav-text">为什么我应该使用特殊的算法例如 HMAC ？为什么我不能直接把密码附加到密钥后面呢？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#盐应该加在密码的前面还是后面？"><span class="nav-number">8.7.</span> <span class="nav-text">盐应该加在密码的前面还是后面？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#为什么本页上的-hash-在有限次数时间内比较-hash-？"><span class="nav-number">8.8.</span> <span class="nav-text">为什么本页上的 hash 在有限次数时间内比较 hash ？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#减速比对代码是如何工作的？"><span class="nav-number">8.9.</span> <span class="nav-text">减速比对代码是如何工作的？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#为什么要这么麻烦地使用-hash-？"><span class="nav-number">8.10.</span> <span class="nav-text">为什么要这么麻烦地使用 hash ？</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#PHP-PBKDF2-密码-hash-代码"><span class="nav-number">9.</span> <span class="nav-text">PHP PBKDF2 密码 hash 代码</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ASP-NET-C-hash-密码源代码"><span class="nav-number">10.</span> <span class="nav-text">ASP.NET(C#) hash 密码源代码</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Ruby-on-Rails-密码-hash-源代码"><span class="nav-number">11.</span> <span class="nav-text">Ruby (on Rails) 密码 hash 源代码</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
       
 
       
@@ -970,6 +853,10 @@
 
 
   
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
 
   
 
@@ -980,6 +867,8 @@
   
   
 
+
+  
 
 
   
